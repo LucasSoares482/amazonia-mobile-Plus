@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'rotas.dart';
+import 'database/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Inicializa o banco e garante que o usuário demo existe
+  await DatabaseHelper.instance.database;
   runApp(const MeuApp());
 }
 

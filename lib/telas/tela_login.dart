@@ -233,9 +233,10 @@ class _TelaLoginState extends State<TelaLogin> {
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _senhaController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // Preenche automaticamente com dados demo para facilitar teste
+    _emailController.text = 'demo@email.com';
+    _senhaController.text = '1234';
   }
 }
