@@ -6,7 +6,7 @@ import '../utils/responsive.dart';
 
 class TelaLogin extends StatefulWidget {
   const TelaLogin({super.key});
-  
+
   @override
   State<TelaLogin> createState() => _TelaLoginState();
 }
@@ -41,9 +41,9 @@ class _TelaLoginState extends State<TelaLogin> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao fazer login')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Erro ao fazer login')));
       }
     } finally {
       setState(() => _carregando = false);
@@ -53,18 +53,14 @@ class _TelaLoginState extends State<TelaLogin> {
   @override
   Widget build(BuildContext context) {
     final isDesktop = Responsive.isDesktop(context);
-    final isTablet = Responsive.isTablet(context);
-    
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.green.shade800,
-              Colors.green.shade400,
-            ],
+            colors: [Colors.green.shade800, Colors.green.shade400],
           ),
         ),
         child: SafeArea(
@@ -91,7 +87,8 @@ class _TelaLoginState extends State<TelaLogin> {
                         children: [
                           Icon(
                             Icons.forest,
-                            size: Responsive.fontSize(context,
+                            size: Responsive.fontSize(
+                              context,
                               mobile: 60,
                               tablet: 80,
                               desktop: 100,
@@ -102,7 +99,8 @@ class _TelaLoginState extends State<TelaLogin> {
                           Text(
                             'Amazônia Experience',
                             style: TextStyle(
-                              fontSize: Responsive.fontSize(context,
+                              fontSize: Responsive.fontSize(
+                                context,
                                 mobile: 24,
                                 tablet: 28,
                                 desktop: 32,
@@ -125,8 +123,10 @@ class _TelaLoginState extends State<TelaLogin> {
                               fillColor: Colors.grey.shade50,
                             ),
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Digite seu e-mail';
-                              if (!value!.contains('@')) return 'E-mail inválido';
+                              if (value?.isEmpty ?? true)
+                                return 'Digite seu e-mail';
+                              if (!value!.contains('@'))
+                                return 'E-mail inválido';
                               return null;
                             },
                           ),
@@ -142,17 +142,22 @@ class _TelaLoginState extends State<TelaLogin> {
                               prefixIcon: const Icon(Icons.lock),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _senhaVisivel ? Icons.visibility_off : Icons.visibility,
+                                  _senhaVisivel
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
                                 ),
                                 onPressed: () {
-                                  setState(() => _senhaVisivel = !_senhaVisivel);
+                                  setState(
+                                    () => _senhaVisivel = !_senhaVisivel,
+                                  );
                                 },
                               ),
                               filled: true,
                               fillColor: Colors.grey.shade50,
                             ),
                             validator: (value) {
-                              if (value?.isEmpty ?? true) return 'Digite sua senha';
+                              if (value?.isEmpty ?? true)
+                                return 'Digite sua senha';
                               if (value!.length < 4) return 'Senha muito curta';
                               return null;
                             },
@@ -169,17 +174,21 @@ class _TelaLoginState extends State<TelaLogin> {
                                 ),
                                 backgroundColor: Colors.green,
                               ),
-                              child: _carregando
-                                  ? const CircularProgressIndicator(color: Colors.white)
-                                  : Text(
-                                      'Entrar',
-                                      style: TextStyle(
-                                        fontSize: Responsive.fontSize(context,
-                                          mobile: 16,
-                                          tablet: 18,
+                              child:
+                                  _carregando
+                                      ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                      )
+                                      : Text(
+                                        'Entrar',
+                                        style: TextStyle(
+                                          fontSize: Responsive.fontSize(
+                                            context,
+                                            mobile: 16,
+                                            tablet: 18,
+                                          ),
                                         ),
                                       ),
-                                    ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -188,7 +197,11 @@ class _TelaLoginState extends State<TelaLogin> {
                             children: [
                               const Text('Não tem conta?'),
                               TextButton(
-                                onPressed: () => Navigator.pushNamed(context, '/cadastro'),
+                                onPressed:
+                                    () => Navigator.pushNamed(
+                                      context,
+                                      '/cadastro',
+                                    ),
                                 child: const Text('Criar conta'),
                               ),
                             ],
@@ -204,8 +217,9 @@ class _TelaLoginState extends State<TelaLogin> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.info_outline, 
-                                  size: 16, 
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 16,
                                   color: Colors.amber.shade800,
                                 ),
                                 const SizedBox(width: 8),

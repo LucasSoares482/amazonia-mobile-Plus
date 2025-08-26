@@ -6,7 +6,7 @@ import 'package:mobile_amazonia/models/usuario.dart';
 void main() {
   group('Testes do App', () {
     testWidgets('App deve iniciar com tela de abertura', (WidgetTester tester) async {
-      await tester.pumpWidget(const MeuApp());
+      await tester.pumpWidget(const AppRoot());
       
       // Verifica se o texto da tela de abertura está presente
       expect(find.text('Amazônia Experience'), findsOneWidget);
