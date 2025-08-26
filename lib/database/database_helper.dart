@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
@@ -28,7 +26,7 @@ class DatabaseHelper {
     // Verifica se email já existe
     final existe = _usuarios.any((u) => u['email'] == usuario['email']);
     if (existe) throw Exception('Email já cadastrado');
-    
+
     usuario['id'] = _usuarioIdCounter++;
     _usuarios.add(usuario);
     return usuario['id'];
@@ -43,7 +41,7 @@ class DatabaseHelper {
       return null;
     }
   }
-  
+
   Future<Map<String, dynamic>?> getUsuario(int id) async {
     try {
       return _usuarios.firstWhere((u) => u['id'] == id);
@@ -57,8 +55,12 @@ class DatabaseHelper {
     _checkins.add(checkin);
     return checkin['id'];
   }
-  
-  Future<int> adicionarCheckin(int usuarioId, String local, String evento) async {
+
+  Future<int> adicionarCheckin(
+    int usuarioId,
+    String local,
+    String evento,
+  ) async {
     return await inserirCheckin({
       'usuario_id': usuarioId,
       'local': local,
@@ -73,7 +75,7 @@ class DatabaseHelper {
         .reversed
         .toList();
   }
-  
+
   Future<List<Map<String, dynamic>>> getHistoricoCheckins(int usuarioId) async {
     return await obterCheckins(usuarioId);
   }
@@ -82,19 +84,27 @@ class DatabaseHelper {
     final usuario = _usuarios.firstWhere((u) => u['id'] == usuarioId);
     usuario['amacoins'] = (usuario['amacoins'] ?? 0) + coins;
   }
-  
+
   Future<void> atualizarAmacoins(int usuarioId, int coins) async {
     await adicionarAmaCoins(usuarioId, coins);
   }
-  
+
   Future<List<Map<String, dynamic>>> getEventos() async {
     return [
       {'id': 1, 'nome': 'Trilha Ecológica', 'descricao': 'Explore a natureza'},
-      {'id': 2, 'nome': 'Oficina de Reciclagem', 'descricao': 'Aprenda a reciclar'},
-      {'id': 3, 'nome': 'Visita Ribeirinha', 'descricao': 'Conheça a cultura local'},
+      {
+        'id': 2,
+        'nome': 'Oficina de Reciclagem',
+        'descricao': 'Aprenda a reciclar',
+      },
+      {
+        'id': 3,
+        'nome': 'Visita Ribeirinha',
+        'descricao': 'Conheça a cultura local',
+      },
     ];
   }
-  
+
   Future<void> limparDatabase() async {
     _checkins.clear();
     _usuarios.clear();
