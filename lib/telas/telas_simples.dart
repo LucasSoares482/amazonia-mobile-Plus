@@ -47,6 +47,7 @@ class TelaHome extends StatelessWidget {
               _buildCard(context, Icons.history, 'Histórico', '/historico', Colors.purple),
               _buildCard(context, Icons.wallet, 'Carteira', '/carteira', Colors.amber),
               _buildCard(context, Icons.person, 'Perfil', '/perfil', Colors.teal),
+              _buildCard(context, Icons.warning, 'Emergência', '/emergencia', Colors.red),
             ],
           );
         },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_amazonia/telas/tela_emergencia.dart';
 import 'telas/tela_abertura.dart';
 import 'telas/tela_login.dart';
 import 'telas/tela_cadastro.dart';
@@ -19,4 +20,5 @@ final Map<String, WidgetBuilder> rotasApp = {
   '/carteira': (context) => const TelaCarteira(),
   '/perfil': (context) => const TelaPerfil(),
   '/historico': (context) => const TelaHistorico(),
+  '/emergencia': (context) => const TelaEmergencia(),
 };
