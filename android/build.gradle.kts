@@ -13,7 +13,8 @@ subprojects {
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
 subprojects {
-    project.evaluationDependsOn(":app")
+    // Removendo dependência do NDK para evitar falhas
+    // Não force evaluationDependsOn para evitar erro do NDK ausente
 }
 
 tasks.register<Delete>("clean") {

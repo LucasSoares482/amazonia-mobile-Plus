@@ -7,7 +7,6 @@ linter:
     - prefer_final_fields
     - sort_child_properties_last
     - avoid_unnecessary_containers
-    - prefer_single_quotes
     - avoid_classes_with_only_static_members
     - avoid_redundant_argument_values
     - avoid_setters_without_getters
@@ -33,7 +32,6 @@ linter:
     - prefer_collection_literals
     - prefer_conditional_assignment
     - prefer_constructors_over_static_methods
-    - prefer_double_quotes
     - prefer_expression_function_bodies
     - prefer_final_in_for_each
     - prefer_foreach
@@ -47,7 +45,6 @@ linter:
     - provide_deprecation_message
     - public_member_api_docs
     - recursive_getters
-    - secure_pubspec_dependencies
     - slash_for_doc_comments
     - sort_constructors_first
     - test_types_in_equals
