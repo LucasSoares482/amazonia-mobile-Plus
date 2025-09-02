@@ -12,26 +12,26 @@ class _TelaMapaState extends State<TelaMapa> {
   late GoogleMapController _mapController;
 
   final Set<Marker> _markers = {
-    Marker(
-      markerId: const MarkerId('ver-o-peso'),
-      position: const LatLng(-1.4528, -48.5044),
-      infoWindow: const InfoWindow(
+    const Marker(
+      markerId: MarkerId('ver-o-peso'),
+      position: LatLng(-1.4528, -48.5044),
+      infoWindow: InfoWindow(
         title: 'Ver-o-Peso',
         snippet: 'Mercado icônico de Belém',
       ),
     ),
-    Marker(
-      markerId: const MarkerId('mangal-das-garcas'),
-      position: const LatLng(-1.4592, -48.4896),
-      infoWindow: const InfoWindow(
+    const Marker(
+      markerId: MarkerId('mangal-das-garcas'),
+      position: LatLng(-1.4592, -48.4896),
+      infoWindow: InfoWindow(
         title: 'Mangal das Garças',
         snippet: 'Parque ecológico com aves e natureza',
       ),
     ),
-    Marker(
-      markerId: const MarkerId('estacao-das-docas'),
-      position: const LatLng(-1.4521, -48.5033),
-      infoWindow: const InfoWindow(
+    const Marker(
+      markerId: MarkerId('estacao-das-docas'),
+      position: LatLng(-1.4521, -48.5033),
+      infoWindow: InfoWindow(
         title: 'Estação das Docas',
         snippet: 'Complexo turístico e gastronômico',
       ),
@@ -39,8 +39,7 @@ class _TelaMapaState extends State<TelaMapa> {
   };
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Mapa de Belém do Pará')),
       body: GoogleMap(
         onMapCreated: (controller) {
@@ -53,5 +52,4 @@ class _TelaMapaState extends State<TelaMapa> {
         markers: _markers,
       ),
     );
-  }
 }

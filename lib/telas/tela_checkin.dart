@@ -54,31 +54,29 @@ class _TelaCheckinState extends State<TelaCheckin> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Check-in')),
+  Widget build(BuildContext context) => Scaffold(
+      appBar: AppBar(title: const Text('Check-in')),
       body: ListView.builder(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         itemCount: _locais.length,
         itemBuilder: (context, index) {
           final local = _locais[index];
           return Card(
-            margin: EdgeInsets.only(bottom: 12),
+            margin: const EdgeInsets.only(bottom: 12),
             child: ListTile(
-              leading: Icon(Icons.location_on, color: Colors.green, size: 40),
+              leading: const Icon(Icons.location_on, color: Colors.green, size: 40),
               title: Text(
                 local['nome'],
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               subtitle: Text('Ganhe ${local['coins']} AmaCoins'),
               trailing: ElevatedButton(
                 onPressed: () => _fazerCheckin(local['nome'], local['coins']),
-                child: Text('Check-in'),
+                child: const Text('Check-in'),
               ),
             ),
           );
         },
       ),
     );
-  }
 }

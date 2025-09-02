@@ -2,9 +2,9 @@ import 'package:dio/dio.dart';
 import '../core/http.dart';
 
 class ApiClient {
-  final Dio _dio;
 
   ApiClient({Dio? dio}) : _dio = dio ?? createDio();
+  final Dio _dio;
 
   /// GET /api/health
   Future<Map<String, dynamic>> health() async {
@@ -75,30 +75,19 @@ class ApiClient {
 }
 
 class LoginResponse {
-  final String token;
-  final Map<String, dynamic>? user;
 
   LoginResponse({required this.token, this.user});
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) {
-    return LoginResponse(
+  factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
       token: (json['token'] ?? json['access_token'] ?? '') as String,
       user:
           json['user'] is Map ? Map<String, dynamic>.from(json['user']) : null,
     );
-  }
+  final String token;
+  final Map<String, dynamic>? user;
 }
 
 class EventItem {
-  final int? id;
-  final String? name;
-  final String? description;
-  final String? location;
-  final double? latitude;
-  final double? longitude;
-  final DateTime? startTime;
-  final DateTime? endTime;
-  final String? eventType;
 
   EventItem({
     this.id,
@@ -139,4 +128,13 @@ class EventItem {
       eventType: json['event_type']?.toString(),
     );
   }
+  final int? id;
+  final String? name;
+  final String? description;
+  final String? location;
+  final double? latitude;
+  final double? longitude;
+  final DateTime? startTime;
+  final DateTime? endTime;
+  final String? eventType;
 }

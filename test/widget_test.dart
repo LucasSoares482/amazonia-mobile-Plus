@@ -17,7 +17,7 @@ void main() {
         home: Scaffold(
           body: ElevatedButton(
             onPressed: () {},
-            child: Text('Login'),
+            child: const Text('Login'),
           ),
         ),
       ));

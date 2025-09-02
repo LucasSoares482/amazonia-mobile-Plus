@@ -30,8 +30,7 @@ class AppRoot extends StatelessWidget {
   const AppRoot({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context) => MaterialApp(
       title: appTitle,
       debugShowCheckedModeBanner: currentFlavor != Flavor.prod,
       theme: ThemeData(
@@ -41,15 +40,13 @@ class AppRoot extends StatelessWidget {
       ),
       home: const HomeScreen(),
     );
-  }
 }
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Menu Principal')),
       body: Center(
         child: Column(
@@ -68,5 +65,4 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
 }

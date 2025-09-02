@@ -1,6 +1,6 @@
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._();
   DatabaseHelper._();
+  static final DatabaseHelper instance = DatabaseHelper._();
 
   // Simulando banco de dados em memória para Web
   final List<Map<String, dynamic>> _usuarios = [];
@@ -60,25 +60,19 @@ class DatabaseHelper {
     int usuarioId,
     String local,
     String evento,
-  ) async {
-    return await inserirCheckin({
+  ) async => inserirCheckin({
       'usuario_id': usuarioId,
       'local': local,
       'data': DateTime.now().toIso8601String(),
     });
-  }
 
-  Future<List<Map<String, dynamic>>> obterCheckins(int usuarioId) async {
-    return _checkins
+  Future<List<Map<String, dynamic>>> obterCheckins(int usuarioId) async => _checkins
         .where((c) => c['usuario_id'] == usuarioId)
         .toList()
         .reversed
         .toList();
-  }
 
-  Future<List<Map<String, dynamic>>> getHistoricoCheckins(int usuarioId) async {
-    return await obterCheckins(usuarioId);
-  }
+  Future<List<Map<String, dynamic>>> getHistoricoCheckins(int usuarioId) async => obterCheckins(usuarioId);
 
   Future<void> adicionarAmaCoins(int usuarioId, int coins) async {
     final usuario = _usuarios.firstWhere((u) => u['id'] == usuarioId);
@@ -89,8 +83,7 @@ class DatabaseHelper {
     await adicionarAmaCoins(usuarioId, coins);
   }
 
-  Future<List<Map<String, dynamic>>> getEventos() async {
-    return [
+  Future<List<Map<String, dynamic>>> getEventos() async => [
       {'id': 1, 'nome': 'Trilha Ecológica', 'descricao': 'Explore a natureza'},
       {
         'id': 2,
@@ -103,7 +96,6 @@ class DatabaseHelper {
         'descricao': 'Conheça a cultura local',
       },
     ];
-  }
 
   Future<void> limparDatabase() async {
     _checkins.clear();

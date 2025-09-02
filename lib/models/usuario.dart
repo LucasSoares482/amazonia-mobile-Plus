@@ -1,9 +1,4 @@
 class Usuario {
-  int? id;
-  String nome;
-  String email;
-  String senha;
-  int amacoins;
 
   Usuario({
     this.id,
@@ -13,23 +8,24 @@ class Usuario {
     this.amacoins = 100,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nome': nome,
-      'email': email,
-      'senha': senha,
-      'amacoins': amacoins,
-    };
-  }
-
-  factory Usuario.fromMap(Map<String, dynamic> map) {
-    return Usuario(
+  factory Usuario.fromMap(Map<String, dynamic> map) => Usuario(
       id: map['id'],
       nome: map['nome'],
       email: map['email'],
       senha: map['senha'],
       amacoins: map['amacoins'],
     );
-  }
+  int? id;
+  String nome;
+  String email;
+  String senha;
+  int amacoins;
+
+  Map<String, dynamic> toMap() => {
+      'id': id,
+      'nome': nome,
+      'email': email,
+      'senha': senha,
+      'amacoins': amacoins,
+    };
 }

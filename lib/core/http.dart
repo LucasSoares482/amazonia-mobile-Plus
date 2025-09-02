@@ -15,11 +15,10 @@ Dio createDio() {
   if (Env.enableLogs) {
     dio.interceptors.add(
       LogInterceptor(
-        requestHeader: true,
         requestBody: true,
         responseBody: true,
         responseHeader: false,
-        logPrint: (obj) => log.d(obj),
+        logPrint: log.d,
       ),
     );
   }

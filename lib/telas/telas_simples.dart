@@ -33,8 +33,7 @@ class TelaHome extends StatelessWidget {
         ],
       ),
       body: LayoutBuilder(
-        builder: (context, constraints) {
-          return GridView.count(
+        builder: (context, constraints) => GridView.count(
             padding: Responsive.padding(context),
             crossAxisCount: Responsive.gridCount(context),
             mainAxisSpacing: 16,
@@ -49,14 +48,12 @@ class TelaHome extends StatelessWidget {
               _buildCard(context, Icons.person, 'Perfil', '/perfil', Colors.teal),
               _buildCard(context, Icons.warning, 'Emergência', '/emergencia', Colors.red),
             ],
-          );
-        },
+          ),
       ),
     );
   }
 
-  Widget _buildCard(BuildContext context, IconData icon, String title, String route, Color color) {
-    return Card(
+  Widget _buildCard(BuildContext context, IconData icon, String title, String route, Color color) => Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -105,7 +102,6 @@ class TelaHome extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 // Tela Mapa Simples
@@ -113,8 +109,7 @@ class TelaMapa extends StatelessWidget {
   const TelaMapa({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Mapa')),
       body: Center(
         child: Column(
@@ -133,7 +128,6 @@ class TelaMapa extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 // Tela Carteira Simples
@@ -180,8 +174,7 @@ class TelaEventos extends StatelessWidget {
       appBar: AppBar(title: const Text('Eventos')),
       body: ListView.builder(
         itemCount: eventos.length,
-        itemBuilder: (context, index) {
-          return ListTile(
+        itemBuilder: (context, index) => ListTile(
             leading: const Icon(Icons.event, color: Colors.green),
             title: Text(eventos[index]),
             subtitle: const Text('Toque para saber mais'),
@@ -190,8 +183,7 @@ class TelaEventos extends StatelessWidget {
                 SnackBar(content: Text('Evento: ${eventos[index]}')),
               );
             },
-          );
-        },
+          ),
       ),
     );
   }
@@ -242,22 +234,18 @@ class TelaQuiz extends StatelessWidget {
   const TelaQuiz({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Quiz')),
       body: const Center(child: Text('Quiz em desenvolvimento')),
     );
-  }
 }
 
 class TelaChatbot extends StatelessWidget {
   const TelaChatbot({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Chatbot')),
       body: const Center(child: Text('Chatbot em desenvolvimento')),
     );
-  }
 }

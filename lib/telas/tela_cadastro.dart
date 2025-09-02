@@ -46,12 +46,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Cadastro')),
+  Widget build(BuildContext context) => Scaffold(
+      appBar: AppBar(title: const Text('Cadastro')),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
             child: Column(
@@ -59,7 +58,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
               children: [
                 TextFormField(
                   controller: _nomeController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Nome',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.person),
@@ -69,10 +68,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _emailController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'E-mail',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.email),
@@ -83,11 +82,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _senhaController,
                   obscureText: true,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Senha',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.lock),
@@ -98,17 +97,17 @@ class _TelaCadastroState extends State<TelaCadastro> {
                     return null;
                   },
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _carregando ? null : _cadastrar,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _carregando
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('Cadastrar'),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('Cadastrar'),
                   ),
                 ),
               ],
@@ -117,7 +116,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
         ),
       ),
     );
-  }
 
   @override
   void dispose() {

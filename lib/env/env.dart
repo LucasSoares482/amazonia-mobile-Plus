@@ -11,7 +11,6 @@ class Env {
   /// DSN do Sentry (pode ficar vazio em dev)
   static const sentryDsn = String.fromEnvironment(
     'SENTRY_DSN',
-    defaultValue: '',
   );
 
   /// Ativa/desativa logs verbosos do app (true em dev/staging, false em prod)

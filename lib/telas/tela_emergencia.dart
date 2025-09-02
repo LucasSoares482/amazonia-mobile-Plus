@@ -5,8 +5,7 @@ class TelaEmergencia extends StatelessWidget {
   const TelaEmergencia({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Emergência'),
         backgroundColor: Colors.green.shade800,
@@ -30,7 +29,6 @@ class TelaEmergencia extends StatelessWidget {
         ),
       ),
     );
-  }
 
   List<Widget> _buildContactList() {
     final contacts = [
@@ -72,8 +70,7 @@ class TelaEmergencia extends StatelessWidget {
         .toList();
   }
 
-  Widget _buildContactCard(String title, String phone) {
-    return Card(
+  Widget _buildContactCard(String title, String phone) => Card(
       elevation: 4,
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
@@ -88,5 +85,4 @@ class TelaEmergencia extends StatelessWidget {
         ),
       ),
     );
-  }
 }

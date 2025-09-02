@@ -41,13 +41,12 @@ class _TelaHistoricoState extends State<TelaHistorico> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Histórico de Check-ins')),
+  Widget build(BuildContext context) => Scaffold(
+      appBar: AppBar(title: const Text('Histórico de Check-ins')),
       body: _carregando
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _checkins.isEmpty
-              ? Center(
+              ? const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -58,14 +57,14 @@ class _TelaHistoricoState extends State<TelaHistorico> {
                   ),
                 )
               : ListView.builder(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   itemCount: _checkins.length,
                   itemBuilder: (context, index) {
                     final checkin = _checkins[index];
                     return Card(
-                      margin: EdgeInsets.only(bottom: 8),
+                      margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
-                        leading: Icon(Icons.check_circle, color: Colors.green),
+                        leading: const Icon(Icons.check_circle, color: Colors.green),
                         title: Text(checkin['local']),
                         subtitle: Text(_formatarData(checkin['data'])),
                       ),
@@ -73,5 +72,4 @@ class _TelaHistoricoState extends State<TelaHistorico> {
                   },
                 ),
     );
-  }
 }

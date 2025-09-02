@@ -21,13 +21,12 @@ class _TelaAberturaState extends State<TelaAbertura> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => const Scaffold(
       backgroundColor: Colors.green,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(
               Icons.forest,
               size: 100,
@@ -50,5 +49,4 @@ class _TelaAberturaState extends State<TelaAbertura> {
         ),
       ),
     );
-  }
 }
