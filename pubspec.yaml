@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   dio: ^5.5.0
+  google_maps_flutter: ^2.12.3
   logger: ^2.0.2
   sentry_flutter: ^8.6.0
 

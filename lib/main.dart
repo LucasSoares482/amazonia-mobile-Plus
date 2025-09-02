@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-import 'env/env.dart';
 import 'config/flavors.dart';
 import 'core/crash_reporter.dart';
 import 'core/log.dart';
 
 // Se você já tem sua splash, ajuste o import/caminho conforme seu projeto:
-import 'telas/tela_abertura.dart' as screens;
+// import 'telas/tela_abertura.dart' as screens;
+import 'telas/tela_mapa.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,8 +39,34 @@ class AppRoot extends StatelessWidget {
         colorSchemeSeed: const Color(0xFF006837),
         brightness: Brightness.light,
       ),
-      // Se preferir rotas nomeadas, integre com seu rotas.dart aqui
-      home: screens.TelaAbertura(), // ajuste se sua tela inicial for outra
+      home: const HomeScreen(),
+    );
+  }
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Menu Principal')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TelaMapa()),
+                );
+              },
+              child: const Text('Mapa de Belém do Pará'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
