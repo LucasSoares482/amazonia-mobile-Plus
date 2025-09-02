@@ -1,28 +1,19 @@
 // main.dart - Entrada principal do aplicativo
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'config/flavors.dart';
 import 'core/crash_reporter.dart';
-import 'core/log.dart';
 import 'telas/tela_abertura.dart';
 import 'rotas.dart';
 
-Future<void> main() async {
+void main() async {
+  // Tudo deve estar na mesma zona
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // Inicializa Sentry (se SENTRY_DSN estiver definido)
   await CrashReporter.init();
-
-  // Captura erros não tratados
-  runZonedGuarded(
-    () {
-      runApp(const AppRoot());
-    },
-    (error, stack) async {
-      log.e('Uncaught error', error: error, stackTrace: stack);
-      await CrashReporter.capture(error, stack);
-    },
-  );
+  
+  // Executa o app
+  runApp(const AppRoot());
 }
 
 class AppRoot extends StatelessWidget {

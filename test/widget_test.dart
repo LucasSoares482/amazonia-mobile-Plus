@@ -33,12 +33,14 @@ void main() {
         nome: 'João',
         email: 'joao@email.com',
         senha: '1234',
+        tipo: 'visitador', // ADICIONADO - parâmetro obrigatório
       );
       
       expect(usuario.nome, 'João');
       expect(usuario.email, 'joao@email.com');
       expect(usuario.senha, '1234');
-      expect(usuario.amacoins, 100); // Valor padrão
+      expect(usuario.tipo, 'visitador'); // ADICIONADO - verificar tipo
+      expect(usuario.amacoins, 0); // CORRIGIDO - valor padrão é 0, não 100
     });
 
     test('Converter usuário para Map', () {
@@ -47,6 +49,7 @@ void main() {
         nome: 'Maria',
         email: 'maria@email.com',
         senha: 'senha123',
+        tipo: 'visitador', // ADICIONADO - parâmetro obrigatório
         amacoins: 150,
       );
       
@@ -56,6 +59,7 @@ void main() {
       expect(map['nome'], 'Maria');
       expect(map['email'], 'maria@email.com');
       expect(map['senha'], 'senha123');
+      expect(map['tipo'], 'visitador'); // ADICIONADO - verificar tipo no map
       expect(map['amacoins'], 150);
     });
 
@@ -65,6 +69,7 @@ void main() {
         'nome': 'Pedro',
         'email': 'pedro@email.com',
         'senha': 'senha456',
+        'tipo': 'responsavel', // ADICIONADO - parâmetro obrigatório
         'amacoins': 200,
       };
       
@@ -74,6 +79,7 @@ void main() {
       expect(usuario.nome, 'Pedro');
       expect(usuario.email, 'pedro@email.com');
       expect(usuario.senha, 'senha456');
+      expect(usuario.tipo, 'responsavel'); // ADICIONADO - verificar tipo
       expect(usuario.amacoins, 200);
     });
   });
