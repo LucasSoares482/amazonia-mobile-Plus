@@ -1,3 +1,4 @@
+// tela_login.dart - Tela de login com usuários de teste
 import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/usuario.dart';
@@ -17,6 +18,42 @@ class _TelaLoginState extends State<TelaLogin> {
   final _senhaController = TextEditingController();
   bool _carregando = false;
   bool _senhaVisivel = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _inicializarUsuariosDemo();
+  }
+
+  Future<void> _inicializarUsuariosDemo() async {
+    try {
+      // Criar usuário visitador demo
+      await DatabaseHelper.instance.inserirUsuario({
+        'nome': 'João Visitador',
+        'email': 'visitador@test.com',
+        'senha': '1234',
+        'tipo': 'visitador',
+        'amacoins': 150,
+      });
+
+      // Criar usuário responsável demo
+      await DatabaseHelper.instance.inserirUsuario({
+        'nome': 'Maria Responsável',
+        'email': 'responsavel@test.com',
+        'senha': '1234',
+        'tipo': 'responsavel',
+        'amacoins': 0,
+      });
+    } catch (e) {
+      // Usuários já existem, ignorar erro
+    }
+  }
+
+  void _loginRapido(String email, String tipo) {
+    _emailController.text = email;
+    _senhaController.text = '1234';
+    _fazerLogin();
+  }
 
   Future<void> _fazerLogin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -41,9 +78,9 @@ class _TelaLoginState extends State<TelaLogin> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Erro ao fazer login')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao fazer login')),
+        );
       }
     } finally {
       setState(() => _carregando = false);
@@ -52,81 +89,115 @@ class _TelaLoginState extends State<TelaLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = Responsive.isDesktop(context);
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.green.shade800, Colors.green.shade400],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.green.shade400, Colors.green.shade800],
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: Responsive.padding(context),
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: Responsive.maxWidth(context),
-                ),
-                child: Card(
-                  elevation: isDesktop ? 8 : 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    size: 80,
+                    color: Colors.white,
                   ),
-                  child: Padding(
-                    padding: EdgeInsets.all(
-                      Responsive.isMobile(context) ? 24 : 40,
+                  const SizedBox(height: 20),
+                  const Text(
+                    'AmaCoins',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  
+                  // Usuários de teste
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Usuários de Teste',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _loginRapido('visitador@test.com', 'visitador'),
+                            icon: const Icon(Icons.person, color: Colors.white),
+                            label: const Text(
+                              'Login como Visitador',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade600,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _loginRapido('responsavel@test.com', 'responsavel'),
+                            icon: const Icon(Icons.business, color: Colors.white),
+                            label: const Text(
+                              'Login como Responsável',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange.shade600,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 30),
+                  
+                  // Formulário manual
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Form(
                       key: _formKey,
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            Icons.forest,
-                            size: Responsive.fontSize(
-                              context,
-                              mobile: 60,
-                              tablet: 80,
-                              desktop: 100,
-                            ),
-                            color: Colors.green,
-                          ),
-                          SizedBox(height: isDesktop ? 24 : 16),
-                          Text(
-                            'Amazônia Experience',
-                            style: TextStyle(
-                              fontSize: Responsive.fontSize(
-                                context,
-                                mobile: 24,
-                                tablet: 28,
-                                desktop: 32,
-                              ),
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade800,
-                            ),
-                          ),
-                          SizedBox(height: isDesktop ? 40 : 32),
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'E-mail',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              prefixIcon: const Icon(Icons.email),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.email),
                             ),
                             validator: (value) {
-                              if (value?.isEmpty ?? true)
-                                return 'Digite seu e-mail';
-                              if (!value!.contains('@'))
-                                return 'E-mail inválido';
+                              if (value?.isEmpty ?? true) return 'Digite seu e-mail';
+                              if (!value!.contains('@')) return 'E-mail inválido';
                               return null;
                             },
                           ),
@@ -136,121 +207,52 @@ class _TelaLoginState extends State<TelaLogin> {
                             obscureText: !_senhaVisivel,
                             decoration: InputDecoration(
                               labelText: 'Senha',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              border: const OutlineInputBorder(),
                               prefixIcon: const Icon(Icons.lock),
                               suffixIcon: IconButton(
                                 icon: Icon(
-                                  _senhaVisivel
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
+                                  _senhaVisivel ? Icons.visibility_off : Icons.visibility,
                                 ),
                                 onPressed: () {
-                                  setState(
-                                    () => _senhaVisivel = !_senhaVisivel,
-                                  );
+                                  setState(() => _senhaVisivel = !_senhaVisivel);
                                 },
                               ),
-                              filled: true,
-                              fillColor: Colors.grey.shade50,
                             ),
                             validator: (value) {
-                              if (value?.isEmpty ?? true)
-                                return 'Digite sua senha';
-                              if (value!.length < 4) return 'Senha muito curta';
+                              if (value?.isEmpty ?? true) return 'Digite sua senha';
                               return null;
                             },
                           ),
                           const SizedBox(height: 24),
                           SizedBox(
                             width: double.infinity,
-                            height: Responsive.isMobile(context) ? 48 : 56,
+                            height: 50,
                             child: ElevatedButton(
                               onPressed: _carregando ? null : _fazerLogin,
                               style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                backgroundColor: Colors.green,
+                                backgroundColor: Colors.green.shade600,
+                                foregroundColor: Colors.white,
                               ),
-                              child:
-                                  _carregando
-                                      ? const CircularProgressIndicator(
-                                        color: Colors.white,
-                                      )
-                                      : Text(
-                                        'Entrar',
-                                        style: TextStyle(
-                                          fontSize: Responsive.fontSize(
-                                            context,
-                                            mobile: 16,
-                                            tablet: 18,
-                                          ),
-                                        ),
-                                      ),
+                              child: _carregando
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : const Text('Entrar', style: TextStyle(fontSize: 16)),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text('Não tem conta?'),
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.pushNamed(
-                                      context,
-                                      '/cadastro',
-                                    ),
-                                child: const Text('Criar conta'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.amber.shade200),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  size: 16,
-                                  color: Colors.amber.shade800,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Demo: demo@email.com / 1234',
-                                  style: TextStyle(
-                                    color: Colors.amber.shade800,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          TextButton(
+                            onPressed: () => Navigator.pushNamed(context, '/cadastro'),
+                            child: const Text('Não tem conta? Cadastre-se'),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Preenche automaticamente com dados demo para facilitar teste
-    _emailController.text = 'demo@email.com';
-    _senhaController.text = '1234';
   }
 }

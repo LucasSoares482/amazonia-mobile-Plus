@@ -1,192 +1,174 @@
-# Amazônia Experience
+# AmaCoins - App de Turismo Sustentável
 
-Aplicativo mobile de turismo sustentável na Amazônia com sistema de gamificação.
+Aplicativo mobile de turismo sustentável na Amazônia com sistema de gamificação para visitadores e responsáveis por eventos.
 
-## Sobre o Projeto
+## ✨ Funcionalidades Principais
 
-O Amazônia Experience incentiva o turismo responsável através de check-ins em locais turísticos, recompensando usuários com AmaCoins (moeda virtual) por visitarem pontos de interesse ecológico.
+### 👥 Sistema de Usuários
+- **Visitador**: Visita eventos e ganha AmaCoins
+- **Responsável**: Cria e gerencia eventos para visitadores
 
-## Tecnologias
+### 🔐 Autenticação
+- Login com usuários de teste pré-configurados
+- Cadastro com seleção de tipo de usuário
+- Persistência de sessão
 
-- **Flutter** 3.x
-- **Dart** 
-- **Material Design** 3
-- **Banco de dados** em memória
+### 📱 Navegação com Sidebar
+- **Carteira**: Visualizar saldo e histórico de AmaCoins
+- **Check-in**: Confirmar presença em eventos
+- **Histórico**: Ver visitas realizadas com compartilhamento WhatsApp
+- **Perfil**: Editar dados e foto com câmera
+- **Mapa**: Visualizar localizações (Google Maps)
+- **Emergência**: Contatos importantes
 
-## Funcionalidades
+### 🎯 Para Visitadores
+- Lista de eventos disponíveis
+- Check-in automático com recompensa em AmaCoins
+- Histórico de visitas com botão compartilhar WhatsApp
+- Sistema de pontuação gamificado
 
-- Sistema de autenticação (login/cadastro)
-- Check-in em locais turísticos
-- Sistema de recompensas com AmaCoins
-- Histórico de visitas
-- Lista de eventos ecológicos
-- Carteira digital
-- Interface responsiva
+### 🏢 Para Responsáveis
+- Criar novos eventos com foto via câmera
+- Gerenciar eventos criados
+- Definir recompensas em AmaCoins
+- Editar/excluir eventos
 
-## Pré-requisitos
+### 📸 Sistema de Câmera
+- Foto de perfil personalizável
+- Fotos para eventos (responsáveis)
+- Integração com câmera e galeria
 
-- Flutter SDK 3.x ou superior
-- Dart SDK
-- Android SDK (para compilar APK)
-- Git
+## 🚀 Como Executar
 
-## Instalação
-
-### 1. Clone o repositório
-
+### 1. Pré-requisitos
 ```bash
-git clone https://github.com/seu-usuario/amazonia-mobile-Plus.git
-cd amazonia-mobile-Plus/mobile_amazonia/mobile_amazonia
+flutter --version  # Flutter 3.8.1 ou superior
 ```
 
-### 2. Instale as dependências
-
+### 2. Instalar dependências
 ```bash
 flutter pub get
 ```
 
-### 3. Verifique a instalação
-
-```bash
-flutter doctor
-```
-
-## Como Executar
-
-### Executar no navegador
-
+### 3. Executar no navegador
 ```bash
 flutter run -d chrome
 ```
 
-### Executar em dispositivo Android conectado
-
+### 4. Executar no Android
 ```bash
 flutter run
 ```
 
-### Executar em emulador
+## 👥 Usuários de Teste
 
-```bash
-flutter emulators --launch <emulator_id>
-flutter run
-```
+### Visitador
+- **Email**: visitador@test.com
+- **Senha**: 1234
+- **Funcionalidades**: Ver eventos, fazer check-in, ganhar AmaCoins
 
-## Compilar o Projeto
+### Responsável
+- **Email**: responsavel@test.com  
+- **Senha**: 1234
+- **Funcionalidades**: Criar eventos, gerenciar localizações
 
-### APK Debug (desenvolvimento)
-
-```bash
-flutter build apk --debug
-```
-Arquivo gerado em: `build/app/outputs/flutter-apk/app-debug.apk`
-
-### APK Release (produção)
-
-```bash
-flutter build apk --release
-```
-Arquivo gerado em: `build/app/outputs/flutter-apk/app-release.apk`
-
-### APK Split por arquitetura (recomendado)
-
-```bash
-flutter build apk --split-per-abi
-```
-Arquivos gerados:
-- `app-armeabi-v7a-release.apk` (32-bit)
-- `app-arm64-v8a-release.apk` (64-bit)
-- `app-x86_64-release.apk` (emulador)
-
-### Build para Web
-
-```bash
-flutter build web
-```
-Arquivos gerados em: `build/web/`
-
-## Estrutura do Projeto
+## 🏗️ Estrutura do Projeto
 
 ```
 lib/
-├── main.dart                 # Entrada da aplicação
-├── rotas.dart               # Definição de rotas
+├── main.dart                    # Entrada principal
+├── rotas.dart                   # Sistema de rotas
+├── config/
+│   └── flavors.dart            # Configurações de ambiente
+├── core/
+│   ├── crash_reporter.dart     # Relatório de erros
+│   ├── http.dart               # Cliente HTTP
+│   └── log.dart                # Sistema de logs
 ├── database/
-│   └── database_helper.dart # Gerenciamento de dados
+│   └── database_helper.dart    # Banco em memória
+├── env/
+│   └── env.dart                # Variáveis de ambiente
 ├── models/
-│   └── usuario.dart         # Modelo de usuário
+│   └── usuario.dart            # Modelo de usuário
+├── telas/
+│   ├── tela_abertura.dart      # Splash screen
+│   ├── tela_login.dart         # Login
+│   ├── tela_cadastro.dart      # Cadastro
+│   ├── tela_home_principal.dart # Tela principal
+│   ├── tela_carteira.dart      # Carteira
+│   ├── tela_checkin.dart       # Check-in
+│   ├── tela_historico.dart     # Histórico
+│   ├── tela_perfil.dart        # Perfil
+│   ├── tela_criar_evento.dart  # Criar eventos
+│   ├── tela_mapa.dart          # Google Maps
+│   └── tela_emergencia.dart    # Emergência
 ├── utils/
-│   ├── app_state.dart       # Estado global
-│   └── responsive.dart     # Helpers responsivos
-└── telas/
-    ├── tela_abertura.dart   # Splash screen
-    ├── tela_login.dart      # Login
-    ├── tela_cadastro.dart   # Cadastro
-    ├── tela_checkin.dart    # Check-in
-    ├── tela_historico.dart  # Histórico
-    └── telas_simples.dart   # Demais telas
+│   ├── app_state.dart          # Estado global
+│   └── responsive.dart         # Utilitários responsivos
+└── widgets/
+    └── sidebar_drawer.dart     # Sidebar navegação
 ```
 
-## Credenciais de Teste
+## 🎮 Como Usar
 
-- **Email:** demo@email.com
-- **Senha:** 1234
+1. **Abrir app** → Tela splash → Login automático
+2. **Login Visitador** → Ver eventos → Fazer check-in → Ganhar AmaCoins
+3. **Login Responsável** → Criar eventos → Adicionar foto → Gerenciar
+4. **Sidebar** → Acessar carteira, perfil, histórico, emergência
+5. **Compartilhar** → Histórico → WhatsApp para amigos
 
-## Resolução de Problemas
+## 📱 Funcionalidades Técnicas
 
-### Erro: "No Android SDK found"
+- **Banco de dados**: Em memória (SharedPreferences para persistência)
+- **Navegação**: Sistema de rotas com argumentos
+- **Estado**: Singleton AppState para usuário logado
+- **Câmera**: image_picker para fotos
+- **Compartilhamento**: url_launcher para WhatsApp
+- **Mapas**: Google Maps Flutter (configurar API key)
+- **Responsivo**: Layout adaptativo para diferentes tamanhos
 
-Instale o Android SDK:
-```bash
-# Linux/Mac
-cd ~/
-mkdir -p Android/Sdk
-# Baixe e configure o Android Command Line Tools
+## 🔧 Configuração Adicional
+
+### Google Maps (Opcional)
+1. Criar API key no Google Cloud Console
+2. Adicionar em `android/app/src/main/AndroidManifest.xml`:
+```xml
+<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="SUA_API_KEY_AQUI"/>
 ```
 
-### Erro: "Flutter command not found"
-
-Adicione o Flutter ao PATH:
-```bash
-export PATH="$PATH:/caminho/para/flutter/bin"
+### Permissões Android
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.INTERNET" />
 ```
 
-### Build falha no Android
+## 🐛 Problemas Resolvidos
 
-Verifique as versões no `android/app/build.gradle`:
-```gradle
-minSdk = 21
-targetSdk = 34
-```
+✅ **Fluxo inicial correto**: Splash → Login → Home  
+✅ **Usuários de teste funcionais**  
+✅ **Sistema de tipos**: Visitador vs Responsável  
+✅ **Navegação sidebar completa**  
+✅ **Check-in com recompensas**  
+✅ **Câmera para perfil e eventos**  
+✅ **Compartilhamento WhatsApp**  
+✅ **Persistência de dados**  
 
-## Testes
+## 📋 TODO
 
-```bash
-# Executar testes unitários
-flutter test
+- [ ] Integração com API real
+- [ ] Push notifications
+- [ ] Offline mode
+- [ ] Testes automatizados
+- [ ] CI/CD pipeline
 
-# Executar testes com cobertura
-flutter test --coverage
-```
+## 📄 Licença
 
-## Requisitos Mínimos
+MIT License - Projeto acadêmico
 
-- **Android:** 5.0 (API 21)
-- **Espaço:** 50MB
-- **RAM:** 1GB
+## 👨‍💻 Autor
 
-## Licença
-
-MIT
-
-## Autor
-
-Lucas Soares dos Santos
-
-## Contribuições
-
-Projeto acadêmico - contribuições não são aceitas no momento.
-
-## Versão
-
-1.0.0
+**Nome**: Desenvolvedor Flutter  
+**Projeto**: Sistema de turismo gamificado para Amazônia

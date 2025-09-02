@@ -1,5 +1,5 @@
 name: mobile_amazonia
-description: "Aplicativo de turismo sustentável na Amazônia"
+description: "Aplicativo de turismo sustentável na Amazônia com sistema de gamificação"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -7,10 +7,22 @@ environment:
   sdk: ^3.8.1
 
 dependencies:
+  flutter:
+    sdk: flutter
+    
+  # Dependências existentes
   dio: ^5.5.0
   google_maps_flutter: ^2.12.3
   logger: ^2.0.2
   sentry_flutter: ^8.6.0
+  
+  # Novas dependências para as funcionalidades
+  image_picker: ^1.0.4  # Para câmera e galeria
+  url_launcher: ^6.2.1  # Para compartilhar no WhatsApp
+  shared_preferences: ^2.2.2  # Para persistir dados localmente
+  
+  # Ícones
+  cupertino_icons: ^1.0.6
 
 dev_dependencies:
   flutter_test:
@@ -18,3 +30,10 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   mocktail: ^1.0.3
+
+flutter:
+  uses-material-design: true
+  
+  # Adicione aqui os assets se necessário
+  # assets:
+  #   - images/
