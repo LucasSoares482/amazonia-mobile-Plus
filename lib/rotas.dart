@@ -1,4 +1,3 @@
-// rotas.dart - Sistema de rotas do aplicativo
 import 'package:flutter/material.dart';
 import 'telas/tela_abertura.dart';
 import 'telas/tela_login.dart';
@@ -23,5 +22,8 @@ final Map<String, WidgetBuilder> rotasApp = {
   '/carteira': (context) => const TelaCarteira(),
   '/perfil': (context) => const TelaPerfil(),
   '/emergencia': (context) => const TelaEmergencia(),
-  '/criar-evento': (context) => const TelaCriarEvento(),
+  '/criar-evento': (context) {
+    final evento = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    return TelaCriarEvento(eventoParaEditar: evento);
+  },
 };
