@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class PrimaryButton extends StatelessWidget {
-  final String text;
-  final VoidCallback? onPressed;
-  final bool isLoading;
 
   const PrimaryButton({
     super.key,
@@ -11,10 +8,12 @@ class PrimaryButton extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
   });
+  final String text;
+  final VoidCallback? onPressed;
+  final bool isLoading;
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
+  Widget build(BuildContext context) => SizedBox(
       height: 50,
       width: double.infinity,
       child: ElevatedButton(
@@ -28,5 +27,4 @@ class PrimaryButton extends StatelessWidget {
             : Text(text, style: const TextStyle(fontSize: 16)),
       ),
     );
-  }
 }

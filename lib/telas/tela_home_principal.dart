@@ -96,8 +96,7 @@ class _TelaHomePrincipalState extends State<TelaHomePrincipal> {
     );
   }
 
-  Widget _buildVisitadorHome() {
-    return CustomScrollView(
+  Widget _buildVisitadorHome() => CustomScrollView(
       slivers: [
         const SliverToBoxAdapter(
           child: Padding(
@@ -134,7 +133,6 @@ class _TelaHomePrincipalState extends State<TelaHomePrincipal> {
           ),
       ],
     );
-  }
 
   Widget _buildResponsavelHome() {
     final meusEventos = _eventos
@@ -162,13 +160,12 @@ class _TelaHomePrincipalState extends State<TelaHomePrincipal> {
         else if (meusEventos.isEmpty)
           const Center(child: Padding(padding: EdgeInsets.only(top: 48.0), child: Text('Nenhum evento criado')))
         else
-          ...meusEventos.map((evento) => _buildMeuEventoCard(evento)),
+          ...meusEventos.map(_buildMeuEventoCard),
       ],
     );
   }
   
-  Widget _buildMeuEventoCard(Map<String, dynamic> evento) {
-    return Card(
+  Widget _buildMeuEventoCard(Map<String, dynamic> evento) => Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -198,5 +195,4 @@ class _TelaHomePrincipalState extends State<TelaHomePrincipal> {
         ),
       ),
     );
-  }
 }

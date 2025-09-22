@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class EventoCard extends StatelessWidget {
-  final Map<String, dynamic> evento;
-  final VoidCallback onTap;
 
   const EventoCard({super.key, required this.evento, required this.onTap});
+  final Map<String, dynamic> evento;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +31,7 @@ class EventoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImageHeader() {
-    return Container(
+  Widget _buildImageHeader() => Container(
       height: 160,
       width: double.infinity,
       decoration: BoxDecoration(
@@ -49,10 +48,8 @@ class EventoCard extends StatelessWidget {
             )
           : const Icon(Icons.event, size: 60, color: Colors.grey),
     );
-  }
 
-  Widget _buildCardContent(bool isAtivo, DateTime dataInicio, DateTime dataFim) {
-    return Padding(
+  Widget _buildCardContent(bool isAtivo, DateTime dataInicio, DateTime dataFim) => Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,10 +69,8 @@ class EventoCard extends StatelessWidget {
         ],
       ),
     );
-  }
 
-  Widget _buildCardTitle(bool isAtivo) {
-    return Row(
+  Widget _buildCardTitle(bool isAtivo) => Row(
       children: [
         Expanded(
           child: Text(
@@ -107,10 +102,8 @@ class EventoCard extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
+  Widget _buildInfoRow(IconData icon, String text) => Row(
       children: [
         Icon(icon, size: 16, color: Colors.grey.shade500),
         const SizedBox(width: 4),
@@ -122,10 +115,8 @@ class EventoCard extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildDateRow(DateTime dataInicio, DateTime dataFim, bool isAtivo) {
-    return Row(
+  Widget _buildDateRow(DateTime dataInicio, DateTime dataFim, bool isAtivo) => Row(
       children: [
         Icon(Icons.access_time, size: 16, color: Colors.grey.shade500),
         const SizedBox(width: 4),
@@ -151,5 +142,4 @@ class EventoCard extends StatelessWidget {
         ),
       ],
     );
-  }
 }

@@ -53,8 +53,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: const Text('Cadastro'),
       ),
@@ -110,10 +109,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
         ),
       ),
     );
-  }
 
-  Widget _buildUserTypeSelector() {
-    return Column(
+  Widget _buildUserTypeSelector() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Tipo de conta:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey)),
@@ -134,7 +131,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
         ),
       ],
     );
-  }
 
   @override
   void dispose() {
