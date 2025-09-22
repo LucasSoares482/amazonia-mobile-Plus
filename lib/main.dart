@@ -8,7 +8,7 @@ void main() async {
   // Garante que os bindings do Flutter foram inicializados antes de chamar código nativo.
   WidgetsFlutterBinding.ensureInitialized();
   // Inicializa o Sentry (se configurado)
-  await CrashReporter.init();
+  await initCrashReporter();
   // Executa a aplicação
   runApp(const AppRoot());
 }

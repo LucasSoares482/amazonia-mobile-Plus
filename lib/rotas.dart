@@ -11,6 +11,7 @@ import 'telas/tela_perfil.dart';
 import 'telas/tela_emergencia.dart';
 import 'telas/tela_criar_evento.dart';
 
+/// Mapa de rotas nomeadas da aplicação.
 final Map<String, WidgetBuilder> rotasApp = {
   '/abertura': (context) => const TelaAbertura(),
   '/login': (context) => const TelaLogin(),

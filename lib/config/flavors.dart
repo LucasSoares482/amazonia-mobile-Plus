@@ -1,7 +1,16 @@
 import '../env/env.dart';
 
-enum Flavor { dev, staging, prod }
+/// Enumeração para os diferentes ambientes da aplicação.
+enum Flavor { 
+  /// Ambiente de desenvolvimento.
+  dev, 
+  /// Ambiente de teste (staging).
+  staging, 
+  /// Ambiente de produção.
+  prod 
+}
 
+/// Obtém o ambiente atual da aplicação com base na variável de ambiente.
 Flavor get currentFlavor {
   switch (Env.flavor) {
     case 'prod':
@@ -13,13 +22,14 @@ Flavor get currentFlavor {
   }
 }
 
+/// Obtém o título da aplicação com base no ambiente atual.
 String get appTitle {
   switch (currentFlavor) {
     case Flavor.dev:
-      return 'Amazônia Experience (DEV)';
+      return 'AmaCoins (DEV)';
     case Flavor.staging:
-      return 'Amazônia Experience (STAGING)';
+      return 'AmaCoins (STAGING)';
     case Flavor.prod:
-      return 'Amazônia Experience';
+      return 'AmaCoins';
   }
 }

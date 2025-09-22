@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../env/env.dart';
 import 'log.dart';
 
+/// Cria e configura uma instância do Dio para requisições HTTP.
 Dio createDio() {
   final dio = Dio(
     BaseOptions(
