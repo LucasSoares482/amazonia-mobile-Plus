@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/usuario.dart';
 import '../utils/app_state.dart';
-import '../widgets/custom_text_form_field.dart';
-import '../widgets/primary_button.dart';
 
 class TelaLogin extends StatefulWidget {
   const TelaLogin({super.key});
@@ -17,6 +15,7 @@ class _TelaLoginState extends State<TelaLogin> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   bool _carregando = false;
+  bool _senhaVisivel = false;
 
   @override
   void initState() {
@@ -33,6 +32,7 @@ class _TelaLoginState extends State<TelaLogin> {
         'tipo': 'visitador',
         'amacoins': 150,
       });
+
       await DatabaseHelper.instance.inserirUsuario({
         'nome': 'Maria Responsável',
         'email': 'responsavel@test.com',
@@ -41,11 +41,11 @@ class _TelaLoginState extends State<TelaLogin> {
         'amacoins': 0,
       });
     } catch (e) {
-      // Usuários já existem
+      // Usuários já existem, ignorar
     }
   }
 
-  void _loginRapido(String email) {
+  void _loginRapido(String email, String tipo) {
     _emailController.text = email;
     _senhaController.text = '1234';
     _fazerLogin();
@@ -53,12 +53,15 @@ class _TelaLoginState extends State<TelaLogin> {
 
   Future<void> _fazerLogin() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _carregando = true);
+
     try {
       final resultado = await DatabaseHelper.instance.loginUsuario(
         _emailController.text,
         _senhaController.text,
       );
+
       if (resultado != null) {
         AppState.login(Usuario.fromMap(resultado));
         if (mounted) Navigator.pushReplacementNamed(context, '/home');
@@ -69,132 +72,219 @@ class _TelaLoginState extends State<TelaLogin> {
           );
         }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao fazer login')),
+        );
+      }
     } finally {
-      if (mounted) setState(() => _carregando = false);
+      setState(() => _carregando = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.green.shade400, Colors.green.shade800],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Imagem de fundo via URL
+          Image.network(
+            'https://blog.archtrends.com/wp-content/uploads/2024/11/belemdoparaabre-1536x1024.jpeg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(color: Colors.green);
+            },
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_on, size: 80, color: Colors.white),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'AmaCoins',
-                    style: TextStyle(
+          // Overlay verde translúcido
+          Container(color: Colors.green.withOpacity(0.4)),
+          // Conteúdo
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo via URL
+                    SizedBox(
+                      height: 120,
+                      child: Image.network(
+                        'https://blog.archtrends.com/wp-content/uploads/2024/11/https://i0.wp.com/apublica.org/wp-content/uploads/2025/04/Selo_COPv9-sem-frase.png?fit=800%2C373&ssl=1',
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                    : null,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox(
+                            height: 120,
+                            child: Center(
+                              child: Icon(Icons.error, size: 80, color: Colors.white),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'AMAZONIA EXPERIENCE',
+                      style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                  const SizedBox(height: 40),
-                  _buildTestUsersCard(),
-                  const SizedBox(height: 30),
-                  _buildLoginForm(),
-                ],
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    // Usuários de teste
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Usuários de Teste',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _loginRapido('visitador@test.com', 'visitador'),
+                              icon: const Icon(Icons.person, color: Colors.white),
+                              label: const Text(
+                                'Login como Visitador',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue.shade600,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () => _loginRapido('responsavel@test.com', 'responsavel'),
+                              icon: const Icon(Icons.business, color: Colors.white),
+                              label: const Text(
+                                'Login como Responsável',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange.shade600,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    // Formulário manual
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              decoration: const InputDecoration(
+                                labelText: 'E-mail',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.email),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'Digite seu e-mail';
+                                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return 'E-mail inválido';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _senhaController,
+                              obscureText: !_senhaVisivel,
+                              decoration: InputDecoration(
+                                labelText: 'Senha',
+                                border: const OutlineInputBorder(),
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(_senhaVisivel ? Icons.visibility_off : Icons.visibility),
+                                  onPressed: () => setState(() => _senhaVisivel = !_senhaVisivel),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'Digite sua senha';
+                                if (value.length < 4) return 'Senha muito curta';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: _carregando ? null : _fazerLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green.shade600,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: _carregando
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : const Text('Entrar', style: TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            TextButton(
+                              onPressed: () => Navigator.pushNamed(context, '/cadastro'),
+                              child: const Text('Não tem conta? Cadastre-se'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTestUsersCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          const Text('Usuários de Teste',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green)),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => _loginRapido('visitador@test.com'),
-            icon: const Icon(Icons.person),
-            label: const Text('Login como Visitador'),
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48)),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            onPressed: () => _loginRapido('responsavel@test.com'),
-            icon: const Icon(Icons.business),
-            label: const Text('Login como Responsável'),
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48)),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLoginForm() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            CustomTextFormField(
-              controller: _emailController,
-              labelText: 'E-mail',
-              icon: Icons.email,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Digite seu e-mail';
-                if (!value!.contains('@')) return 'E-mail inválido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            CustomTextFormField(
-              controller: _senhaController,
-              labelText: 'Senha',
-              icon: Icons.lock,
-              obscureText: true,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Digite sua senha';
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              text: 'Entrar',
-              onPressed: _fazerLogin,
-              isLoading: _carregando,
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/cadastro'),
-              child: const Text('Não tem conta? Cadastre-se'),
-            ),
-          ],
-        ),
       ),
     );
   }

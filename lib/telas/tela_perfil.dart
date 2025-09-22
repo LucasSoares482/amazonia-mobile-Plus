@@ -511,8 +511,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
-    return Column(
+  Widget _buildStatItem(String label, String value, IconData icon, Color color) => Column(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
@@ -545,7 +544,6 @@ class _TelaPerfilState extends State<TelaPerfil> {
         ),
       ],
     );
-  }
 
   @override
   void dispose() {

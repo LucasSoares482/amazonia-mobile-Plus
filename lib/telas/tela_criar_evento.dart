@@ -6,9 +6,9 @@ import '../database/database_helper.dart';
 import '../utils/app_state.dart';
 
 class TelaCriarEvento extends StatefulWidget {
-  final Map<String, dynamic>? eventoParaEditar;
 
   const TelaCriarEvento({super.key, this.eventoParaEditar});
+  final Map<String, dynamic>? eventoParaEditar;
 
   @override
   State<TelaCriarEvento> createState() => _TelaCriarEventoState();
@@ -119,8 +119,7 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
 
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Evento' : 'Criar Evento'),
         actions: [
@@ -148,10 +147,8 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
         ),
       ),
     );
-  }
 
-  Widget _buildImagePicker() {
-    return GestureDetector(
+  Widget _buildImagePicker() => GestureDetector(
       onTap: () => _selecionarFoto(ImageSource.gallery), // Simplificado para galeria
       child: Container(
         height: 200,
@@ -164,10 +161,8 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
         child: _fotoPath == null ? const Center(child: Icon(Icons.add_a_photo, size: 48)) : null,
       ),
     );
-  }
 
-  Widget _buildEventInfoForm() {
-    return Container(
+  Widget _buildEventInfoForm() => Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
@@ -204,10 +199,8 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
         ],
       ),
     );
-  }
 
-  Widget _buildDateTimePicker() {
-    return Container(
+  Widget _buildDateTimePicker() => Container(
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
@@ -232,5 +225,4 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
         ],
       ),
     );
-  }
 }

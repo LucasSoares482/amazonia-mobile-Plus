@@ -49,8 +49,7 @@ class _TelaMapaState extends State<TelaMapa> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green.shade600,
         foregroundColor: Colors.white,
@@ -191,5 +190,4 @@ class _TelaMapaState extends State<TelaMapa> {
         ],
       ),
     );
-  }
 }
