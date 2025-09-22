@@ -10,10 +10,6 @@ import 'telas/tela_carteira.dart';
 import 'telas/tela_perfil.dart';
 import 'telas/tela_emergencia.dart';
 import 'telas/tela_criar_evento.dart';
-import 'telas/chat_bot.dart';
-import 'telas/recompensa.dart';
-
-
 
 /// Mapa de rotas nomeadas da aplicação.
 final Map<String, WidgetBuilder> rotasApp = {
@@ -31,7 +27,4 @@ final Map<String, WidgetBuilder> rotasApp = {
     final evento = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     return TelaCriarEvento(eventoParaEditar: evento);
   },
-  // Novas rotas implementadas
-  '/chatbot': (context) => const ChatBotScreen(),
-  '/recompensas': (context) => const TelaRecompensas(),
 };
