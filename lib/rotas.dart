@@ -6,6 +6,8 @@ import 'telas/tela_home_principal.dart';
 import 'telas/tela_mapa.dart';
 import 'telas/tela_checkin.dart';
 import 'telas/tela_historico.dart';
+import 'telas/tela_chatbot.dart';
+import 'telas/tela_recompensa.dart';
 import 'telas/tela_carteira.dart';
 import 'telas/tela_perfil.dart';
 import 'telas/tela_emergencia.dart';
@@ -20,11 +22,14 @@ final Map<String, WidgetBuilder> rotasApp = {
   '/mapa': (context) => const TelaMapa(),
   '/checkin': (context) => const TelaCheckin(),
   '/historico': (context) => const TelaHistorico(),
+  '/chatbot': (context) => const ChatBotScreen(),
+  '/recompensas': (context) => const TelaRecompensas(),
   '/carteira': (context) => const TelaCarteira(),
   '/perfil': (context) => const TelaPerfil(),
   '/emergencia': (context) => const TelaEmergencia(),
   '/criar-evento': (context) {
-    final evento = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final evento =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     return TelaCriarEvento(eventoParaEditar: evento);
   },
 };
