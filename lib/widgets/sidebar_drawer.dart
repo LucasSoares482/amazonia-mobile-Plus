@@ -88,6 +88,18 @@ class SidebarDrawer extends StatelessWidget {
                     'Check-in',
                     '/checkin',
                   ),
+                   _buildDrawerItem(
+                    context,
+                    Icons.chat,
+                    'ChatBot',
+                    '/chatbot',
+                  ),
+                   _buildDrawerItem(
+                    context,
+                    Icons.card_giftcard,
+                    'Recompensas',
+                    '/recompensas',
+                  ),
                   _buildDrawerItem(
                     context,
                     Icons.history,
