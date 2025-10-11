@@ -25,7 +25,9 @@ class _TelaHistoricoState extends State<TelaHistorico> {
     if (AppState.usuarioLogado == null) return;
     setState(() => _carregando = true);
     try {
-      final checkins = await DatabaseHelper.instance.obterCheckins(AppState.usuarioLogado!.id!);
+      final usuarioId = AppState.usuarioLogado?.id;
+      if (usuarioId == null) return;
+      final checkins = await DatabaseHelper.instance.obterCheckins(usuarioId);
       if (mounted) setState(() => _checkins = checkins);
     } finally {
       if (mounted) setState(() => _carregando = false);
@@ -45,8 +47,7 @@ class _TelaHistoricoState extends State<TelaHistorico> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(title: const Text('Histórico de Visitas')),
       body: RefreshIndicator(
         onRefresh: _carregarCheckins,
@@ -57,10 +58,8 @@ class _TelaHistoricoState extends State<TelaHistorico> {
                 : _buildListaHistorico(),
       ),
     );
-  }
 
-  Widget _buildListaHistorico() {
-    return ListView.builder(
+  Widget _buildListaHistorico() => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _checkins.length,
       itemBuilder: (context, index) {
@@ -71,10 +70,8 @@ class _TelaHistoricoState extends State<TelaHistorico> {
         );
       },
     );
-  }
 
-  Widget _buildHistoricoVazio() {
-    return const Center(
+  Widget _buildHistoricoVazio() => const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -93,5 +90,4 @@ class _TelaHistoricoState extends State<TelaHistorico> {
         ],
       ),
     );
-  }
 }

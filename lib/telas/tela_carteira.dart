@@ -21,11 +21,12 @@ class _TelaCarteiraState extends State<TelaCarteira> {
   }
 
   Future<void> _carregarHistorico() async {
-    if (AppState.usuarioLogado == null) return;
+    final usuarioId = AppState.usuarioLogado?.id;
+    if (usuarioId == null) return;
 
     try {
       final historico = await DatabaseHelper.instance.getHistoricoCheckins(
-        AppState.usuarioLogado!.id!,
+        usuarioId,
       );
       setState(() {
         _historico = historico;

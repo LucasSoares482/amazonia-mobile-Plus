@@ -137,8 +137,7 @@ class SidebarDrawer extends StatelessWidget {
     String? route, {
     bool isLogout = false,
     VoidCallback? onTap,
-  }) {
-    return ListTile(
+  }) => ListTile(
       leading: Icon(
         icon,
         color: isLogout ? Colors.red : Colors.green.shade600,
@@ -157,7 +156,6 @@ class SidebarDrawer extends StatelessWidget {
         }
       },
     );
-  }
 
   void _logout(BuildContext context) => showDialog(
       context: context,

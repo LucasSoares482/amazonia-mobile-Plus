@@ -13,7 +13,7 @@ class Usuario {
 
   /// Cria um utilizador a partir de um mapa de dados.
   factory Usuario.fromMap(Map<String, dynamic> map) => Usuario(
-        id: map['id'],
+        id: map['id']?.toString(),
         nome: map['nome'],
         email: map['email'],
         senha: map['senha'],
@@ -23,7 +23,7 @@ class Usuario {
       );
 
   /// ID único do utilizador.
-  int? id;
+  String? id;
   /// Nome completo do utilizador.
   String nome;
   /// Email do utilizador.

@@ -24,26 +24,8 @@ class _TelaLoginState extends State<TelaLogin> {
     _inicializarUsuariosDemo();
   }
 
-  Future<void> _inicializarUsuariosDemo() async {
-    try {
-      await DatabaseHelper.instance.inserirUsuario({
-        'nome': 'João Visitador',
-        'email': 'visitador@test.com',
-        'senha': '1234',
-        'tipo': 'visitador',
-        'amacoins': 150,
-      });
-      await DatabaseHelper.instance.inserirUsuario({
-        'nome': 'Maria Responsável',
-        'email': 'responsavel@test.com',
-        'senha': '1234',
-        'tipo': 'responsavel',
-        'amacoins': 0,
-      });
-    } catch (e) {
-      // Usuários já existem
-    }
-  }
+  Future<void> _inicializarUsuariosDemo() =>
+      DatabaseHelper.instance.seedDemoData();
 
   void _loginRapido(String email) {
     _emailController.text = email;
@@ -75,8 +57,7 @@ class _TelaLoginState extends State<TelaLogin> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -95,7 +76,7 @@ class _TelaLoginState extends State<TelaLogin> {
                   const Icon(Icons.location_on, size: 80, color: Colors.white),
                   const SizedBox(height: 20),
                   const Text(
-                    'AmaCoins',
+                    'Amazônia Experience',
                     style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -112,10 +93,8 @@ class _TelaLoginState extends State<TelaLogin> {
         ),
       ),
     );
-  }
 
-  Widget _buildTestUsersCard() {
-    return Container(
+  Widget _buildTestUsersCard() => Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
@@ -147,10 +126,8 @@ class _TelaLoginState extends State<TelaLogin> {
         ],
       ),
     );
-  }
 
-  Widget _buildLoginForm() {
-    return Container(
+  Widget _buildLoginForm() => Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -197,5 +174,4 @@ class _TelaLoginState extends State<TelaLogin> {
         ),
       ),
     );
-  }
 }

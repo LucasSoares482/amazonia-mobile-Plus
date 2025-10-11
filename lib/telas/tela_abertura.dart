@@ -22,8 +22,7 @@ class _TelaAberturaState extends State<TelaAbertura> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -71,5 +70,4 @@ class _TelaAberturaState extends State<TelaAbertura> {
         ),
       ),
     );
-  }
 }

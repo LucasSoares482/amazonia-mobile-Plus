@@ -1,25 +1,39 @@
-// main.dart - Entrada principal do aplicativo (Corrigido)
+// main.dart - Entrada principal do aplicativo (com Firebase integrado)
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'config/flavors.dart';
 import 'core/crash_reporter.dart';
+import 'firebase_options.dart';
 import 'rotas.dart';
 
-void main() async {
-  // Garante que os bindings do Flutter foram inicializados antes de chamar código nativo.
+Future<void> main() async {
+  // Garante que o Flutter está inicializado antes de rodar código assíncrono.
   WidgetsFlutterBinding.ensureInitialized();
-  // Inicializa o Sentry (se configurado)
+
+  // Inicializa o Firebase com as configurações do projeto geradas pelo FlutterFire CLI.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Faz login anônimo (útil para demonstrações e protótipos).
+  await FirebaseAuth.instance.signInAnonymously();
+
+  // Inicializa o sistema de relatórios de erro (Sentry, por exemplo)
   await initCrashReporter();
-  // Executa a aplicação
+
+  // Executa a aplicação.
   runApp(const AppRoot());
 }
 
-/// O widget raiz da aplicação.
+/// Widget raiz da aplicação.
 class AppRoot extends StatelessWidget {
-  /// Construtor do widget raiz.
   const AppRoot({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp( // CORREÇÃO: Corpo de função de expressão
+  Widget build(BuildContext context) => MaterialApp(
         title: appTitle,
         debugShowCheckedModeBanner: currentFlavor != Flavor.prod,
         theme: _buildTheme(),
@@ -45,20 +59,44 @@ class AppRoot extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         ),
       ),
-      // CORREÇÃO 1: Usar CardThemeData em vez de CardTheme
       cardTheme: CardThemeData(
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        // CORREÇÃO 2: Removido horizontal: 0 que era redundante
-        margin: const EdgeInsets.symmetric(vertical: 8), 
+        margin: const EdgeInsets.symmetric(vertical: 8),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.green.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
-        // centerTitle: true foi removido pois já é o padrão em muitas configurações
+      ),
+    );
+  }
+}
+
+/// Página de teste do Firebase (opcional, pode remover depois)
+class FirebaseTestPage extends StatelessWidget {
+  const FirebaseTestPage({super.key});
+
+  Future<void> _gravarTeste() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'sem-usuario';
+    await FirebaseFirestore.instance.collection('testes').add({
+      'userId': uid,
+      'mensagem': 'Olá, Firebase!',
+      'data': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Teste Firebase')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _gravarTeste,
+          child: const Text('Gravar teste no Firestore'),
+        ),
       ),
     );
   }

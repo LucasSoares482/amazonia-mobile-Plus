@@ -36,7 +36,8 @@ class _TelaCheckinState extends State<TelaCheckin> {
   }
 
   Future<void> _realizarCheckin() async {
-    if (_eventoSelecionado == null || AppState.usuarioLogado == null) return;
+    final usuarioId = AppState.usuarioLogado?.id;
+    if (_eventoSelecionado == null || usuarioId == null) return;
 
     setState(() => _carregando = true);
 
@@ -46,14 +47,14 @@ class _TelaCheckinState extends State<TelaCheckin> {
 
       // Adicionar check-in
       await DatabaseHelper.instance.adicionarCheckin(
-        AppState.usuarioLogado!.id!,
+        usuarioId,
         _eventoSelecionado!['endereco'],
         _eventoSelecionado!['titulo'],
       );
 
       // Adicionar AmaCoins
       await DatabaseHelper.instance.adicionarAmaCoins(
-        AppState.usuarioLogado!.id!,
+        usuarioId,
         _eventoSelecionado!['amacoins'],
       );
 
@@ -79,8 +80,7 @@ class _TelaCheckinState extends State<TelaCheckin> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.green.shade600,
         foregroundColor: Colors.white,
@@ -93,10 +93,8 @@ class _TelaCheckinState extends State<TelaCheckin> {
               ? _buildCheckinSucesso()
               : _buildTelaCheckin(),
     );
-  }
 
-  Widget _buildSemEventoSelecionado() {
-    return const Center(
+  Widget _buildSemEventoSelecionado() => const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -125,10 +123,8 @@ class _TelaCheckinState extends State<TelaCheckin> {
         ],
       ),
     );
-  }
 
-  Widget _buildTelaCheckin() {
-    return Column(
+  Widget _buildTelaCheckin() => Column(
       children: [
         // Header do evento
         Container(
@@ -302,10 +298,8 @@ class _TelaCheckinState extends State<TelaCheckin> {
         ),
       ],
     );
-  }
 
-  Widget _buildCheckinSucesso() {
-    return Padding(
+  Widget _buildCheckinSucesso() => Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -384,5 +378,4 @@ class _TelaCheckinState extends State<TelaCheckin> {
         ],
       ),
     );
-  }
 }
