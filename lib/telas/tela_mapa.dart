@@ -244,9 +244,9 @@ class _TelaMapaState extends State<TelaMapa> {
                   colors: [Colors.green.shade600, Colors.green.shade500],
                 ),
               ),
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
+                children: [
                   Row(
                     children: [
                       Icon(Icons.map, color: Colors.white, size: 26),
@@ -275,7 +275,6 @@ class _TelaMapaState extends State<TelaMapa> {
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: _centroInicial,
-                  initialZoom: 13,
                   onLongPress: (_, coordenadas) =>
                       _adicionarMarcadorPersonalizado(coordenadas),
                 ),

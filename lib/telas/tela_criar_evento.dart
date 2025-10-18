@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../database/database_helper.dart';
 import '../utils/app_state.dart';
+import '../utils/image_resolver.dart';
 
 class TelaCriarEvento extends StatefulWidget {
 
@@ -44,6 +45,9 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
       _dataInicio = DateTime.parse(evento['data_inicio']);
       _dataFim = DateTime.parse(evento['data_fim']);
       _fotoPath = evento['foto_path'];
+      if (kIsWeb && _fotoPath != null && _fotoPath!.startsWith('blob:')) {
+        _fotoPath = null;
+      }
     }
 
     _dataInicioController.text = dateFormat.format(_dataInicio);
@@ -81,7 +85,7 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
         'data_fim': _dataFim.toIso8601String(),
         'amacoins': int.parse(_amacoinsController.text),
         'responsavel_id': AppState.usuarioLogado!.id,
-        'foto_path': _fotoPath,
+        'foto_path': kIsWeb ? null : _fotoPath,
       };
 
       if (isEditing) {
@@ -149,18 +153,28 @@ class _TelaCriarEventoState extends State<TelaCriarEvento> {
     );
 
   Widget _buildImagePicker() => GestureDetector(
-      onTap: () => _selecionarFoto(ImageSource.gallery), // Simplificado para galeria
-      child: Container(
-        height: 200,
-        margin: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(16),
-          image: _fotoPath != null ? DecorationImage(image: FileImage(File(_fotoPath!)), fit: BoxFit.cover) : null,
+        onTap: () => _selecionarFoto(ImageSource.gallery),
+        child: Builder(
+          builder: (context) {
+            final previewImage = resolveUserImage(_fotoPath);
+            return Container(
+              height: 200,
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration
+              (
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(16),
+                image: previewImage != null
+                    ? DecorationImage(image: previewImage, fit: BoxFit.cover)
+                    : null,
+              ),
+              child: previewImage == null
+                  ? const Center(child: Icon(Icons.add_a_photo, size: 48))
+                  : null,
+            );
+          },
         ),
-        child: _fotoPath == null ? const Center(child: Icon(Icons.add_a_photo, size: 48)) : null,
-      ),
-    );
+      );
 
   Widget _buildEventInfoForm() => Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),

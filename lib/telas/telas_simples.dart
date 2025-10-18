@@ -25,8 +25,9 @@ class TelaHome extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
-            onPressed: () {
-              AppState.logout();
+            onPressed: () async {
+              await AppState.logout();
+              // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, '/login');
             },
           ),
@@ -216,8 +217,9 @@ class TelaPerfil extends StatelessWidget {
             Text(usuario?.email ?? '', style: const TextStyle(fontSize: 16)),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () {
-                AppState.logout();
+              onPressed: () async {
+                await AppState.logout();
+                // ignore: use_build_context_synchronously
                 Navigator.pushReplacementNamed(context, '/login');
               },
               child: const Text('Sair'),

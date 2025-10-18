@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Helper centralizado para manipular os dados armazenados no Firebase.
 class DatabaseHelper {
@@ -8,6 +11,9 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static const _cacheEventosKey = 'cache_eventos_sync';
+
+  static bool _eventosCarregadosDoCache = false;
 
   CollectionReference<Map<String, dynamic>> get _usuariosRef =>
       _db.collection('usuarios');
@@ -15,6 +21,10 @@ class DatabaseHelper {
       _db.collection('eventos');
   CollectionReference<Map<String, dynamic>> get _checkinsRef =>
       _db.collection('checkins');
+  CollectionReference<Map<String, dynamic>> get _passwordResetRef =>
+      _db.collection('password_reset_requests');
+  CollectionReference<Map<String, dynamic>> get _pontosTuristicosRef =>
+      _db.collection('pontos_turisticos');
 
   /// Cria dados de demonstração (usuários e eventos) se ainda não existirem.
   Future<void> seedDemoData() async {
@@ -168,19 +178,30 @@ class DatabaseHelper {
 
   /// Obtém todos os eventos cadastrados.
   Future<List<Map<String, dynamic>>> obterEventos() async {
-    final snapshot = await _eventosRef.get();
-    final eventos = snapshot.docs
-        .map((doc) => {...doc.data(), 'id': doc.id})
-        .toList();
+    try {
+      final snapshot = await _eventosRef.get();
+      final eventos = snapshot.docs
+          .map((doc) => {...doc.data(), 'id': doc.id})
+          .toList();
 
-    eventos.sort((a, b) {
-      final inicioA = DateTime.tryParse(a['data_inicio']?.toString() ?? '');
-      final inicioB = DateTime.tryParse(b['data_inicio']?.toString() ?? '');
-      if (inicioA == null || inicioB == null) return 0;
-      return inicioA.compareTo(inicioB);
-    });
+      eventos.sort((a, b) {
+        final inicioA = DateTime.tryParse(a['data_inicio']?.toString() ?? '');
+        final inicioB = DateTime.tryParse(b['data_inicio']?.toString() ?? '');
+        if (inicioA == null || inicioB == null) return 0;
+        return inicioA.compareTo(inicioB);
+      });
 
-    return eventos;
+      await _persistirEventosCache(eventos);
+      _eventosCarregadosDoCache = false;
+      return eventos;
+    } catch (_) {
+      final cached = await _recuperarEventosCache();
+      if (cached != null) {
+        _eventosCarregadosDoCache = true;
+        return cached;
+      }
+      rethrow;
+    }
   }
 
   /// Obtém os eventos de um responsável específico.
@@ -280,6 +301,7 @@ class DatabaseHelper {
     await _deleteAllDocs(_checkinsRef);
     await _deleteAllDocs(_eventosRef);
     await _deleteAllDocs(_usuariosRef);
+    await _deleteAllDocs(_passwordResetRef);
   }
 
   Future<void> _deleteAllDocs(
@@ -290,4 +312,86 @@ class DatabaseHelper {
       await doc.reference.delete();
     }
   }
+
+  /// Regista uma solicitação de recuperação de senha.
+  ///
+  /// Armazena o pedido para posterior processamento pelo backend.
+  Future<void> solicitarRecuperacaoSenha(String email) async {
+    final usuario = await _buscarUsuarioPorEmail(email);
+    if (usuario == null) return;
+
+    await _passwordResetRef.add({
+      'usuario_id': usuario['id'],
+      'email': email,
+      'solicitado_em': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Obtém todos os usuários cadastrados (uso administrativo).
+  Future<List<Map<String, dynamic>>> obterUsuarios() async {
+    final snapshot = await _usuariosRef.get();
+    return snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
+  }
+
+  /// Atualiza o tipo/perfil de um usuário.
+  Future<void> atualizarTipoUsuario(String usuarioId, String tipo) async {
+    await _usuariosRef.doc(usuarioId).update({'tipo': tipo});
+  }
+
+  /// Obtém os pontos turísticos cadastrados no Firestore.
+  Future<List<Map<String, dynamic>>> obterPontosTuristicos() async {
+    final snapshot = await _pontosTuristicosRef.orderBy('nome').get();
+    return snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
+  }
+
+  /// Cadastra um novo ponto turístico.
+  Future<String> adicionarPontoTuristico(Map<String, dynamic> ponto) async {
+    final dados = {...ponto}..remove('id');
+    final doc = await _pontosTuristicosRef.add(dados);
+    return doc.id;
+  }
+
+  /// Atualiza um ponto turístico existente.
+  Future<void> atualizarPontoTuristico(Map<String, dynamic> ponto) async {
+    final id = ponto['id']?.toString();
+    if (id == null) {
+      throw Exception('ID do ponto turístico não informado');
+    }
+    final dados = {...ponto}..remove('id');
+    await _pontosTuristicosRef.doc(id).update(dados);
+  }
+
+  /// Remove um ponto turístico pelo ID.
+  Future<void> deletarPontoTuristico(String id) async {
+    await _pontosTuristicosRef.doc(id).delete();
+  }
+
+  Future<void> _persistirEventosCache(
+    List<Map<String, dynamic>> eventos,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cacheEventosKey, jsonEncode(eventos));
+  }
+
+  Future<List<Map<String, dynamic>>?> _recuperarEventosCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cacheEventosKey);
+    if (raw == null) return null;
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded
+          .map((item) =>
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>))
+          .toList();
+    } catch (_) {
+      await prefs.remove(_cacheEventosKey);
+      return null;
+    }
+  }
+
+  bool get eventosCarregadosDoCache => _eventosCarregadosDoCache;
 }

@@ -1,9 +1,12 @@
 // telas/tela_perfil.dart - Tela de perfil com câmera
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../utils/app_state.dart';
 import '../database/database_helper.dart';
+import '../services/wallet_service.dart';
+import '../models/wallet_transaction.dart';
+import '../utils/image_resolver.dart';
 
 class TelaPerfil extends StatefulWidget {
   const TelaPerfil({super.key});
@@ -15,20 +18,63 @@ class TelaPerfil extends StatefulWidget {
 class _TelaPerfilState extends State<TelaPerfil> {
   final _nomeController = TextEditingController();
   final _emailController = TextEditingController();
+  final _bioController = TextEditingController();
+  final _paisController = TextEditingController();
+  final _idadeController = TextEditingController();
+  final _senhaController = TextEditingController();
   String? _fotoPath;
   bool _salvando = false;
+  bool _mostrarSenha = false;
+  bool _carregandoHistoricos = true;
+  List<Map<String, dynamic>> _checkins = [];
+  List<WalletTransaction> _transacoes = [];
 
   @override
   void initState() {
     super.initState();
     _carregarDadosUsuario();
+    _carregarHistoricos();
   }
 
   void _carregarDadosUsuario() {
     final usuario = AppState.usuarioLogado!;
     _nomeController.text = usuario.nome;
     _emailController.text = usuario.email;
-    _fotoPath = usuario.fotoPerfil;
+    if (kIsWeb &&
+        usuario.fotoPerfil != null &&
+        usuario.fotoPerfil!.startsWith('blob:')) {
+      _fotoPath = null;
+      usuario.fotoPerfil = null;
+    } else {
+      _fotoPath = usuario.fotoPerfil;
+    }
+    _bioController.text = usuario.bio ?? '';
+    _paisController.text = usuario.pais ?? '';
+    _idadeController.text =
+        usuario.idade != null ? usuario.idade.toString() : '';
+  }
+
+  Future<void> _carregarHistoricos() async {
+    final usuario = AppState.usuarioLogado;
+    if (usuario?.id == null) {
+      setState(() => _carregandoHistoricos = false);
+      return;
+    }
+    try {
+      final checkins =
+          await DatabaseHelper.instance.obterCheckins(usuario!.id!);
+      final transacoes =
+          await WalletService.instance.fetchTransactions(usuario.id!);
+      if (!mounted) return;
+      setState(() {
+        _checkins = checkins;
+        _transacoes = transacoes;
+        _carregandoHistoricos = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _carregandoHistoricos = false);
+    }
   }
 
   Future<void> _mostrarOpcoesImagem() async {
@@ -173,8 +219,35 @@ class _TelaPerfilState extends State<TelaPerfil> {
       final usuario = AppState.usuarioLogado!;
       usuario.nome = _nomeController.text.trim();
       usuario.fotoPerfil = _fotoPath;
+      usuario.bio = _bioController.text.trim().isEmpty
+          ? null
+          : _bioController.text.trim();
+      usuario.pais = _paisController.text.trim().isEmpty
+          ? null
+          : _paisController.text.trim();
+      usuario.idade = _idadeController.text.trim().isEmpty
+          ? null
+          : int.tryParse(_idadeController.text.trim());
+
+      final novaSenha = _senhaController.text.trim();
+      if (novaSenha.isNotEmpty) {
+        if (novaSenha.length < 6) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('A nova senha deve ter pelo menos 6 caracteres.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+          setState(() => _salvando = false);
+          return;
+        }
+        usuario.senha = novaSenha;
+      }
       
       await DatabaseHelper.instance.atualizarUsuario(usuario.toMap());
+      await AppState.atualizarUsuario(usuario);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -208,6 +281,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
   @override
   Widget build(BuildContext context) {
     final usuario = AppState.usuarioLogado!;
+    final avatarImage = resolveUserImage(_fotoPath);
     
     return Scaffold(
       appBar: AppBar(
@@ -283,10 +357,8 @@ class _TelaPerfilState extends State<TelaPerfil> {
                             child: CircleAvatar(
                               radius: 58,
                               backgroundColor: Colors.grey.shade200,
-                              backgroundImage: _fotoPath != null
-                                  ? FileImage(File(_fotoPath!))
-                                  : null,
-                              child: _fotoPath == null
+                              backgroundImage: avatarImage,
+                              child: avatarImage == null
                                   ? Icon(
                                       Icons.person,
                                       size: 60,
@@ -344,7 +416,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        usuario.isVisitador ? 'Visitador' : 'Responsável',
+                        usuario.isAdministrador ? 'Administrador' : 'Usuário Comum',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white,
@@ -430,7 +502,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
                       decoration: InputDecoration(
                         labelText: 'Tipo de conta',
                         prefixIcon: Icon(
-                          usuario.isVisitador ? Icons.person : Icons.business,
+                          usuario.isAdministrador ? Icons.admin_panel_settings : Icons.person_outline,
                           color: Colors.grey.shade400,
                         ),
                         border: OutlineInputBorder(
@@ -440,7 +512,79 @@ class _TelaPerfilState extends State<TelaPerfil> {
                         fillColor: Colors.grey.shade50,
                       ),
                       controller: TextEditingController(
-                        text: usuario.isVisitador ? 'Visitador' : 'Responsável',
+                        text: usuario.isAdministrador ? 'Administrador' : 'Usuário Comum',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _paisController,
+                      decoration: InputDecoration(
+                        labelText: 'País de origem',
+                        prefixIcon: Icon(
+                          Icons.flag_outlined,
+                          color: Colors.green.shade600,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _idadeController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Idade',
+                        prefixIcon: Icon(
+                          Icons.cake_outlined,
+                          color: Colors.green.shade600,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _bioController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: 'Bio',
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(
+                          Icons.person_pin_circle_outlined,
+                          color: Colors.green.shade600,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _senhaController,
+                      obscureText: !_mostrarSenha,
+                      decoration: InputDecoration(
+                        labelText: 'Nova senha',
+                        prefixIcon: Icon(
+                          Icons.lock_outline,
+                          color: Colors.green.shade600,
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => _mostrarSenha = !_mostrarSenha);
+                          },
+                          icon: Icon(
+                            _mostrarSenha
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                          ),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        helperText:
+                            'Deixe em branco para manter a senha atual.',
                       ),
                     ),
                   ],
@@ -448,7 +592,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
               ),
               
               // Estatísticas para visitador
-              if (usuario.isVisitador)
+              if (usuario.isUsuarioComum)
                 Container(
                   margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
                   padding: const EdgeInsets.all(24),
@@ -502,8 +646,26 @@ class _TelaPerfilState extends State<TelaPerfil> {
                     ],
                   ),
                 ),
-                
               const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: _carregandoHistoricos
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHistoricoCheckins(),
+                          const SizedBox(height: 16),
+                          _buildHistoricoCarteira(),
+                        ],
+                      ),
+              ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -549,6 +711,195 @@ class _TelaPerfilState extends State<TelaPerfil> {
   void dispose() {
     _nomeController.dispose();
     _emailController.dispose();
+    _bioController.dispose();
+    _paisController.dispose();
+    _idadeController.dispose();
+    _senhaController.dispose();
     super.dispose();
+  }
+
+  Widget _buildHistoricoCheckins() {
+    if (_checkins.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Text(
+            'Nenhum check-in registrado ainda. Participe dos eventos da COP30 para acumular experiências!',
+            style: TextStyle(color: Colors.grey.shade700),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Últimos check-ins',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.green.shade800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._checkins.take(5).map((checkin) {
+              final data = DateTime.tryParse(checkin['data']?.toString() ?? '');
+              final dataFormatada = data != null
+                  ? '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')} '
+                      '${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}'
+                  : 'Data desconhecida';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.location_on,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            checkin['evento']?.toString() ?? 'Evento',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            checkin['local']?.toString() ?? '',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            dataFormatada,
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoricoCarteira() {
+    if (_transacoes.isEmpty) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Text(
+            'Sua carteira ainda não tem movimentos. Faça check-ins ou trocas para começar.',
+            style: TextStyle(color: Colors.grey.shade700),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Carteira (últimas movimentações)',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.green.shade800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ..._transacoes.take(5).map((transacao) {
+              final cor = transacao.isCredito
+                  ? Colors.green.shade700
+                  : Colors.red.shade700;
+              final prefixo = transacao.isCredito ? '+' : '-';
+              final data = transacao.data;
+              final dataFormatada =
+                  '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')} '
+                  '${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}';
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: transacao.isCredito
+                            ? Colors.green.shade100
+                            : Colors.red.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        transacao.isCredito
+                            ? Icons.trending_up
+                            : Icons.trending_down,
+                        color: cor,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            transacao.descricao,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            dataFormatada,
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '$prefixo${transacao.valor.abs()}',
+                      style: TextStyle(
+                        color: cor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
   }
 }
