@@ -1,12 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import '../core/security/login_rate_limiter.dart';
 import '../database/database_helper.dart';
+import '../l10n/l10n.dart';
 import '../models/usuario.dart';
+import '../services/analytics_service.dart';
 import '../utils/app_state.dart';
 import '../widgets/custom_text_form_field.dart';
 import '../widgets/primary_button.dart';
 
 class TelaLogin extends StatefulWidget {
-  const TelaLogin({super.key});
+  const TelaLogin({super.key, this.seedDemo = true});
+
+  final bool seedDemo;
 
   @override
   State<TelaLogin> createState() => _TelaLoginState();
@@ -17,55 +25,73 @@ class _TelaLoginState extends State<TelaLogin> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
   bool _carregando = false;
+  bool _mostrarSenha = false;
 
   @override
   void initState() {
     super.initState();
-    _inicializarUsuariosDemo();
-  }
-
-  Future<void> _inicializarUsuariosDemo() async {
-    try {
-      await DatabaseHelper.instance.inserirUsuario({
-        'nome': 'João Visitador',
-        'email': 'visitador@test.com',
-        'senha': '1234',
-        'tipo': 'visitador',
-        'amacoins': 150,
-      });
-      await DatabaseHelper.instance.inserirUsuario({
-        'nome': 'Maria Responsável',
-        'email': 'responsavel@test.com',
-        'senha': '1234',
-        'tipo': 'responsavel',
-        'amacoins': 0,
-      });
-    } catch (e) {
-      // Usuários já existem
+    if (widget.seedDemo) {
+      unawaited(_inicializarUsuariosDemo());
     }
+    AnalyticsService.instance.logScreenView('login');
   }
 
-  void _loginRapido(String email) {
-    _emailController.text = email;
-    _senhaController.text = '1234';
-    _fazerLogin();
-  }
+  Future<void> _inicializarUsuariosDemo() =>
+      DatabaseHelper.instance.seedDemoData();
 
   Future<void> _fazerLogin() async {
     if (!_formKey.currentState!.validate()) return;
+
+    FocusScope.of(context).unfocus();
+
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text.trim();
+
+    final lockInfo = await LoginRateLimiter.checkLock(email);
+    if (lockInfo != null) {
+      AnalyticsService.instance.logEvent(
+        'login_error',
+        properties: {'motivo': 'tentativas_excedidas'},
+      );
+      _mostrarSnackBar(AppLocalizations.of(context).loginAttemptsExceeded);
+      return;
+    }
+
     setState(() => _carregando = true);
     try {
-      final resultado = await DatabaseHelper.instance.loginUsuario(
-        _emailController.text,
-        _senhaController.text,
-      );
+      final resultado = await DatabaseHelper.instance.loginUsuario(email, senha);
       if (resultado != null) {
-        AppState.login(Usuario.fromMap(resultado));
-        if (mounted) Navigator.pushReplacementNamed(context, '/home');
-      } else {
+        await LoginRateLimiter.registerSuccess(email);
+        await AppState.login(Usuario.fromMap(resultado));
+
+        AnalyticsService.instance.logEvent('login_success');
+        if (!mounted) return;
+        _mostrarSnackBar(
+          AppLocalizations.of(context).loginSuccess,
+          background: Colors.green.shade600,
+        );
+        await Future.delayed(const Duration(milliseconds: 450));
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email ou senha incorretos')),
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      } else {
+        final tentativasRestantes =
+            await LoginRateLimiter.registerFailure(email);
+        if (!mounted) return;
+        if (tentativasRestantes == 0) {
+          AnalyticsService.instance.logEvent(
+            'login_error',
+            properties: {'motivo': 'tentativas_excedidas'},
+          );
+          _mostrarSnackBar(AppLocalizations.of(context).loginAttemptsExceeded);
+        } else {
+          AnalyticsService.instance.logEvent(
+            'login_error',
+            properties: {'motivo': 'credenciais_invalidas'},
+          );
+          _mostrarSnackBar(
+            AppLocalizations.of(context)
+                .loginRemainingAttempts(tentativasRestantes),
           );
         }
       }
@@ -74,128 +100,204 @@ class _TelaLoginState extends State<TelaLogin> {
     }
   }
 
+  void _mostrarSnackBar(
+    String message, {
+    Color? background,
+  }) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: background,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.green.shade400, Colors.green.shade800],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_on, size: 80, color: Colors.white),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'AmaCoins',
-                    style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                  const SizedBox(height: 40),
-                  _buildTestUsersCard(),
-                  const SizedBox(height: 30),
-                  _buildLoginForm(),
-                ],
+    final l10n = AppLocalizations.of(context);
+
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/belem_background.jpg',
+                fit: BoxFit.cover,
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTestUsersCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          const Text('Usuários de Teste',
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green)),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => _loginRapido('visitador@test.com'),
-            icon: const Icon(Icons.person),
-            label: const Text('Login como Visitador'),
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48)),
-          ),
-          const SizedBox(height: 8),
-          ElevatedButton.icon(
-            onPressed: () => _loginRapido('responsavel@test.com'),
-            icon: const Icon(Icons.business),
-            label: const Text('Login como Responsável'),
-            style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoginForm() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            CustomTextFormField(
-              controller: _emailController,
-              labelText: 'E-mail',
-              icon: Icons.email,
-              keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Digite seu e-mail';
-                if (!value!.contains('@')) return 'E-mail inválido';
-                return null;
-              },
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.75),
+                      Colors.black.withOpacity(0.65),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
-            CustomTextFormField(
-              controller: _senhaController,
-              labelText: 'Senha',
-              icon: Icons.lock,
-              obscureText: true,
-              validator: (value) {
-                if (value?.isEmpty ?? true) return 'Digite sua senha';
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              text: 'Entrar',
-              onPressed: _fazerLogin,
-              isLoading: _carregando,
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/cadastro'),
-              child: const Text('Não tem conta? Cadastre-se'),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.travel_explore,
+                          size: 72,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.appTitle,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.loginSubtitle,
+                          textAlign: TextAlign.center,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                        ),
+                        const SizedBox(height: 32),
+                        _buildLoginForm(l10n),
+                        const SizedBox(height: 24),
+                        _buildActionsRow(l10n),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildLoginForm(AppLocalizations l10n) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 24,
+              offset: const Offset(0, 16),
+            ),
+          ],
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              CustomTextFormField(
+                controller: _emailController,
+                labelText: l10n.loginEmailLabel,
+                icon: Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return l10n.loginEmailError;
+                  }
+                  if (!(value!.contains('@') && value.contains('.'))) {
+                    return l10n.loginEmailError;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _senhaController,
+                obscureText: !_mostrarSenha,
+                decoration: InputDecoration(
+                  labelText: l10n.loginPasswordLabel,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    tooltip: _mostrarSenha
+                        ? l10n.loginPasswordLabel
+                        : l10n.loginPasswordLabel,
+                    icon: Icon(
+                      _mostrarSenha ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () =>
+                        setState(() => _mostrarSenha = !_mostrarSenha),
+                  ),
+                ),
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return l10n.loginPasswordError;
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              PrimaryButton(
+                text: l10n.loginPrimaryButton,
+                onPressed: _carregando ? null : _fazerLogin,
+                isLoading: _carregando,
+              ),
+            ],
+          ),
+        ),
+      );
+
+  Widget _buildActionsRow(AppLocalizations l10n) => Wrap(
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          SizedBox(
+            width: 160,
+            child: TextButton(
+              onPressed: _carregando
+                  ? null
+                  : () => Navigator.pushNamed(context, '/cadastro'),
+              child: Text(
+                l10n.loginSignupLink,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 180,
+            child: TextButton(
+              onPressed: _carregando
+                  ? null
+                  : () => Navigator.pushNamed(context, '/recuperar-senha'),
+              child: Text(
+                l10n.loginForgotPassword,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ],
+      );
+
 }

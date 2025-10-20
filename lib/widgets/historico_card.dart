@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 
 class HistoricoCard extends StatelessWidget {
-  final Map<String, dynamic> checkin;
-  final VoidCallback onShare;
 
   const HistoricoCard({
     super.key,
     required this.checkin,
     required this.onShare,
   });
+  final Map<String, dynamic> checkin;
+  final VoidCallback onShare;
 
-  String _formatarData(DateTime data) {
-    return '${data.day}/${data.month}/${data.year} às ${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatarData(DateTime data) => '${data.day}/${data.month}/${data.year} às ${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}';
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +48,7 @@ class HistoricoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, String nomeEvento, String endereco) {
-    return Row(
+  Widget _buildHeader(BuildContext context, String nomeEvento, String endereco) => Row(
       children: [
         Container(
           width: 48,
@@ -90,10 +87,8 @@ class HistoricoCard extends StatelessWidget {
         ),
       ],
     );
-  }
 
-  Widget _buildFooter(BuildContext context, DateTime data) {
-    return Row(
+  Widget _buildFooter(BuildContext context, DateTime data) => Row(
       children: [
         Icon(Icons.access_time, size: 16, color: Colors.grey.shade500),
         const SizedBox(width: 4),
@@ -103,5 +98,4 @@ class HistoricoCard extends StatelessWidget {
         ),
       ],
     );
-  }
 }

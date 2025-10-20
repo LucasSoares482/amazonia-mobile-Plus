@@ -1,147 +1,257 @@
-// database/database_helper.dart - Banco de dados simulado corrigido
-/// Classe helper para gerenciar o banco de dados simulado
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Helper centralizado para manipular os dados armazenados no Firebase.
 class DatabaseHelper {
-  /// Construtor privado para Singleton
   DatabaseHelper._();
-  
-  /// Instância única do database helper
+
+  /// Instância singleton do helper.
   static final DatabaseHelper instance = DatabaseHelper._();
 
-  // Simulando banco de dados em memória
-  final List<Map<String, dynamic>> _usuarios = [];
-  final List<Map<String, dynamic>> _checkins = [];
-  final List<Map<String, dynamic>> _eventos = [];
-  int _usuarioIdCounter = 1;
-  int _checkinIdCounter = 1;
-  int _eventoIdCounter = 1;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  static const _cacheEventosKey = 'cache_eventos_sync';
 
-  /// Getter para inicializar o banco de dados
-  Future<void> get database async {
-    if (_usuarios.isEmpty) {
-      // Criar eventos padrão para demonstração
-      await _criarEventosDemo();
-    }
-  }
+  static bool _eventosCarregadosDoCache = false;
 
-  Future<void> _criarEventosDemo() async {
-    // Eventos criados por responsável demo (ID 2)
+  CollectionReference<Map<String, dynamic>> get _usuariosRef =>
+      _db.collection('usuarios');
+  CollectionReference<Map<String, dynamic>> get _eventosRef =>
+      _db.collection('eventos');
+  CollectionReference<Map<String, dynamic>> get _checkinsRef =>
+      _db.collection('checkins');
+  CollectionReference<Map<String, dynamic>> get _passwordResetRef =>
+      _db.collection('password_reset_requests');
+  CollectionReference<Map<String, dynamic>> get _pontosTuristicosRef =>
+      _db.collection('pontos_turisticos');
+
+  /// Cria dados de demonstração (usuários e eventos) se ainda não existirem.
+  Future<void> seedDemoData() async {
+    final responsavel = await _buscarUsuarioPorEmail('responsavel@test.com') ??
+        await _criarUsuarioDemo(
+          nome: 'Maria Responsável',
+          email: 'responsavel@test.com',
+          tipo: 'responsavel',
+        );
+
+    await _buscarUsuarioPorEmail('visitador@test.com') ??
+        await _criarUsuarioDemo(
+          nome: 'João Visitador',
+          email: 'visitador@test.com',
+          tipo: 'visitador',
+          amacoins: 150,
+        );
+
+    final possuiEventos = await _eventosRef.limit(1).get();
+    if (possuiEventos.docs.isNotEmpty) return;
+
+    final agora = DateTime.now();
     final eventosDemo = [
       {
-        'id': _eventoIdCounter++,
         'titulo': 'Festival Cultural da Amazônia',
-        'descricao': 'Grande festival com música, dança e gastronomia típica da região amazônica.',
+        'descricao':
+            'Grande festival com música, dança e gastronomia típica da região amazônica.',
         'endereco': 'Estação das Docas, Belém - PA',
-        'data_inicio': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
-        'data_fim': DateTime.now().add(const Duration(days: 3)).toIso8601String(),
+        'data_inicio':
+            agora.add(const Duration(days: 1)).toIso8601String(),
+        'data_fim':
+            agora.add(const Duration(days: 3)).toIso8601String(),
         'amacoins': 50,
-        'responsavel_id': 2,
+        'responsavel_id': responsavel['id'],
         'foto_path': null,
       },
       {
-        'id': _eventoIdCounter++,
         'titulo': 'Trilha Ecológica no Mangal',
-        'descricao': 'Caminhada guiada pela natureza do Mangal das Garças com observação da fauna local.',
+        'descricao':
+            'Caminhada guiada pela natureza do Mangal das Garças com observação da fauna local.',
         'endereco': 'Mangal das Garças, Belém - PA',
-        'data_inicio': DateTime.now().add(const Duration(hours: 6)).toIso8601String(),
-        'data_fim': DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+        'data_inicio':
+            agora.add(const Duration(hours: 6)).toIso8601String(),
+        'data_fim':
+            agora.add(const Duration(days: 1)).toIso8601String(),
         'amacoins': 30,
-        'responsavel_id': 2,
+        'responsavel_id': responsavel['id'],
         'foto_path': null,
       },
       {
-        'id': _eventoIdCounter++,
         'titulo': 'Workshop de Artesanato Regional',
-        'descricao': 'Aprenda técnicas tradicionais de artesanato paraense com mestres artesãos.',
+        'descricao':
+            'Aprenda técnicas tradicionais de artesanato paraense com mestres artesãos.',
         'endereco': 'Casa das Artes, Belém - PA',
-        'data_inicio': DateTime.now().add(const Duration(days: 2)).toIso8601String(),
-        'data_fim': DateTime.now().add(const Duration(days: 2, hours: 4)).toIso8601String(),
+        'data_inicio':
+            agora.add(const Duration(days: 2)).toIso8601String(),
+        'data_fim': agora
+            .add(const Duration(days: 2, hours: 4))
+            .toIso8601String(),
         'amacoins': 40,
-        'responsavel_id': 2,
+        'responsavel_id': responsavel['id'],
         'foto_path': null,
       },
     ];
 
-    _eventos.addAll(eventosDemo);
-  }
-
-  // Métodos de usuário
-  /// Insere um novo usuário no banco
-  Future<int> inserirUsuario(Map<String, dynamic> usuario) async {
-    // Verifica se email já existe
-    final existe = _usuarios.any((u) => u['email'] == usuario['email']);
-    if (existe) throw Exception('Email já cadastrado');
-
-    usuario['id'] = _usuarioIdCounter++;
-    _usuarios.add(usuario);
-    return usuario['id'];
-  }
-
-  /// Realiza login do usuário
-  Future<Map<String, dynamic>?> loginUsuario(String email, String senha) async {
-    try {
-      return _usuarios.firstWhere(
-        (u) => u['email'] == email && u['senha'] == senha,
-      );
-    } catch (e) {
-      return null;
+    for (final evento in eventosDemo) {
+      await _eventosRef.add(evento);
     }
   }
 
-  /// Obtém usuário por ID
-  Future<Map<String, dynamic>?> getUsuario(int id) async {
-    try {
-      return _usuarios.firstWhere((u) => u['id'] == id);
-    } catch (e) {
-      return null;
-    }
+  Future<Map<String, dynamic>> _criarUsuarioDemo({
+    required String nome,
+    required String email,
+    required String tipo,
+    int amacoins = 0,
+  }) async {
+    final dados = {
+      'nome': nome,
+      'email': email,
+      'senha': '1234',
+      'tipo': tipo,
+      'amacoins': amacoins,
+    };
+    final id = await inserirUsuario(dados);
+    return {...dados, 'id': id};
   }
 
-  /// Atualiza dados do usuário
+  Future<Map<String, dynamic>?> _buscarUsuarioPorEmail(String email) async {
+    final snapshot = await _usuariosRef
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isEmpty) return null;
+    final doc = snapshot.docs.first;
+    return {...doc.data(), 'id': doc.id};
+  }
+
+  /// Insere um novo usuário no Firestore.
+  Future<String> inserirUsuario(Map<String, dynamic> usuario) async {
+    final existente =
+        await _usuariosRef.where('email', isEqualTo: usuario['email']).limit(1).get();
+    if (existente.docs.isNotEmpty) {
+      throw Exception('Email já cadastrado');
+    }
+
+    final dados = {...usuario}..remove('id');
+    dados['amacoins'] = dados['amacoins'] ?? 0;
+    final doc = await _usuariosRef.add(dados);
+    return doc.id;
+  }
+
+  /// Realiza o login de um usuário consultando por email e senha.
+  Future<Map<String, dynamic>?> loginUsuario(
+    String email,
+    String senha,
+  ) async {
+    final snapshot = await _usuariosRef
+        .where('email', isEqualTo: email)
+        .where('senha', isEqualTo: senha)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    return {...doc.data(), 'id': doc.id};
+  }
+
+  /// Obtém um usuário pelo ID do documento.
+  Future<Map<String, dynamic>?> getUsuario(String id) async {
+    final doc = await _usuariosRef.doc(id).get();
+    if (!doc.exists) return null;
+    return {...doc.data()!, 'id': doc.id};
+  }
+
+  /// Atualiza os dados do usuário no Firestore.
   Future<void> atualizarUsuario(Map<String, dynamic> usuario) async {
-    final index = _usuarios.indexWhere((u) => u['id'] == usuario['id']);
-    if (index != -1) {
-      _usuarios[index] = usuario;
+    final usuarioId = usuario['id']?.toString();
+    if (usuarioId == null) throw Exception('ID do usuário não informado');
+
+    final dados = {...usuario}..remove('id');
+    await _usuariosRef.doc(usuarioId).update(dados);
+  }
+
+  /// Insere um novo evento.
+  Future<String> inserirEvento(Map<String, dynamic> evento) async {
+    final dados = {...evento}..remove('id');
+    final doc = await _eventosRef.add(dados);
+    return doc.id;
+  }
+
+  /// Obtém todos os eventos cadastrados.
+  Future<List<Map<String, dynamic>>> obterEventos() async {
+    try {
+      final snapshot = await _eventosRef.get();
+      final eventos = snapshot.docs
+          .map((doc) => {...doc.data(), 'id': doc.id})
+          .toList();
+
+      eventos.sort((a, b) {
+        final inicioA = DateTime.tryParse(a['data_inicio']?.toString() ?? '');
+        final inicioB = DateTime.tryParse(b['data_inicio']?.toString() ?? '');
+        if (inicioA == null || inicioB == null) return 0;
+        return inicioA.compareTo(inicioB);
+      });
+
+      await _persistirEventosCache(eventos);
+      _eventosCarregadosDoCache = false;
+      return eventos;
+    } catch (_) {
+      final cached = await _recuperarEventosCache();
+      if (cached != null) {
+        _eventosCarregadosDoCache = true;
+        return cached;
+      }
+      rethrow;
     }
   }
 
-  // Métodos de eventos
-  /// Insere novo evento
-  Future<int> inserirEvento(Map<String, dynamic> evento) async {
-    evento['id'] = _eventoIdCounter++;
-    _eventos.add(evento);
-    return evento['id'];
+  /// Obtém os eventos de um responsável específico.
+  Future<List<Map<String, dynamic>>> obterEventosResponsavel(
+    String responsavelId,
+  ) async {
+    final snapshot = await _eventosRef
+        .where('responsavel_id', isEqualTo: responsavelId)
+        .get();
+    final eventos = snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
+
+    eventos.sort((a, b) {
+      final inicioA = DateTime.tryParse(a['data_inicio']?.toString() ?? '');
+      final inicioB = DateTime.tryParse(b['data_inicio']?.toString() ?? '');
+      if (inicioA == null || inicioB == null) return 0;
+      return inicioA.compareTo(inicioB);
+    });
+
+    return eventos;
   }
 
-  /// Obtém todos os eventos
-  Future<List<Map<String, dynamic>>> obterEventos() async => List.from(_eventos);
-
-  /// Obtém eventos de um responsável específico
-  Future<List<Map<String, dynamic>>> obterEventosResponsavel(int responsavelId) async =>
-      _eventos.where((e) => e['responsavel_id'] == responsavelId).toList();
-
-  /// Atualiza um evento
+  /// Atualiza os dados do evento.
   Future<void> atualizarEvento(Map<String, dynamic> evento) async {
-    final index = _eventos.indexWhere((e) => e['id'] == evento['id']);
-    if (index != -1) {
-      _eventos[index] = evento;
-    }
+    final eventoId = evento['id']?.toString();
+    if (eventoId == null) throw Exception('ID do evento não informado');
+
+    final dados = {...evento}..remove('id');
+    await _eventosRef.doc(eventoId).update(dados);
   }
 
-  /// Exclui um evento
-  Future<void> excluirEvento(int eventoId) async {
-    _eventos.removeWhere((e) => e['id'] == eventoId);
+  /// Exclui um evento pelo ID.
+  Future<void> excluirEvento(String eventoId) async {
+    await _eventosRef.doc(eventoId).delete();
   }
 
-  // Métodos de check-in
-  /// Insere um novo check-in
-  Future<int> inserirCheckin(Map<String, dynamic> checkin) async {
-    checkin['id'] = _checkinIdCounter++;
-    _checkins.add(checkin);
-    return checkin['id'];
+  /// Insere um check-in com dados completos.
+  Future<String> inserirCheckin(Map<String, dynamic> checkin) async {
+    final dados = {...checkin}..remove('id');
+    final doc = await _checkinsRef.add(dados);
+    return doc.id;
   }
 
-  /// Adiciona um check-in
-  Future<int> adicionarCheckin(int usuarioId, String local, String evento) async =>
+  /// Cria um check-in com dados mínimos.
+  Future<String> adicionarCheckin(
+    String usuarioId,
+    String local,
+    String evento,
+  ) async =>
       inserirCheckin({
         'usuario_id': usuarioId,
         'local': local,
@@ -149,39 +259,139 @@ class DatabaseHelper {
         'data': DateTime.now().toIso8601String(),
       });
 
-  /// Obtém check-ins do usuário
-  Future<List<Map<String, dynamic>>> obterCheckins(int usuarioId) async =>
-      _checkins
-          .where((c) => c['usuario_id'] == usuarioId)
-          .toList()
-          .reversed
-          .toList();
+  /// Obtém todos os check-ins do usuário.
+  Future<List<Map<String, dynamic>>> obterCheckins(String usuarioId) async {
+    final snapshot = await _checkinsRef
+        .where('usuario_id', isEqualTo: usuarioId)
+        .get();
 
-  /// Obtém histórico de check-ins
-  Future<List<Map<String, dynamic>>> getHistoricoCheckins(int usuarioId) async =>
+    final checkins = snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
+
+    checkins.sort((a, b) {
+      final dataA = DateTime.tryParse(a['data']?.toString() ?? '');
+      final dataB = DateTime.tryParse(b['data']?.toString() ?? '');
+      if (dataA == null || dataB == null) return 0;
+      return dataB.compareTo(dataA);
+    });
+
+    return checkins;
+  }
+
+  /// Histórico de check-ins (mesmo comportamento do método principal).
+  Future<List<Map<String, dynamic>>> getHistoricoCheckins(
+    String usuarioId,
+  ) =>
       obterCheckins(usuarioId);
 
-  /// Adiciona AmaCoins ao usuário
-  Future<void> adicionarAmaCoins(int usuarioId, int coins) async {
-    final usuarioIndex = _usuarios.indexWhere((u) => u['id'] == usuarioId);
-    if (usuarioIndex != -1) {
-      _usuarios[usuarioIndex]['amacoins'] = 
-          (_usuarios[usuarioIndex]['amacoins'] ?? 0) + coins;
+  /// Incrementa a quantidade de AmaCoins do usuário.
+  Future<void> adicionarAmaCoins(String usuarioId, int coins) async {
+    await _usuariosRef.doc(usuarioId).update({
+      'amacoins': FieldValue.increment(coins),
+    });
+  }
+
+  /// Atualiza a quantidade de AmaCoins (mantém compatibilidade com API atual).
+  Future<void> atualizarAmacoins(String usuarioId, int coins) =>
+      adicionarAmaCoins(usuarioId, coins);
+
+  /// Remove todos os dados do Firestore (uso administrativo).
+  Future<void> limparDatabase() async {
+    await _deleteAllDocs(_checkinsRef);
+    await _deleteAllDocs(_eventosRef);
+    await _deleteAllDocs(_usuariosRef);
+    await _deleteAllDocs(_passwordResetRef);
+  }
+
+  Future<void> _deleteAllDocs(
+    CollectionReference<Map<String, dynamic>> collection,
+  ) async {
+    final snapshot = await collection.get();
+    for (final doc in snapshot.docs) {
+      await doc.reference.delete();
     }
   }
 
-  /// Atualiza AmaCoins do usuário
-  Future<void> atualizarAmacoins(int usuarioId, int coins) async {
-    await adicionarAmaCoins(usuarioId, coins);
+  /// Regista uma solicitação de recuperação de senha.
+  ///
+  /// Armazena o pedido para posterior processamento pelo backend.
+  Future<void> solicitarRecuperacaoSenha(String email) async {
+    final usuario = await _buscarUsuarioPorEmail(email);
+    if (usuario == null) return;
+
+    await _passwordResetRef.add({
+      'usuario_id': usuario['id'],
+      'email': email,
+      'solicitado_em': FieldValue.serverTimestamp(),
+    });
   }
 
-  /// Limpa todo o banco de dados
-  Future<void> limparDatabase() async {
-    _checkins.clear();
-    _usuarios.clear();
-    _eventos.clear();
-    _usuarioIdCounter = 1;
-    _checkinIdCounter = 1;
-    _eventoIdCounter = 1;
+  /// Obtém todos os usuários cadastrados (uso administrativo).
+  Future<List<Map<String, dynamic>>> obterUsuarios() async {
+    final snapshot = await _usuariosRef.get();
+    return snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
   }
+
+  /// Atualiza o tipo/perfil de um usuário.
+  Future<void> atualizarTipoUsuario(String usuarioId, String tipo) async {
+    await _usuariosRef.doc(usuarioId).update({'tipo': tipo});
+  }
+
+  /// Obtém os pontos turísticos cadastrados no Firestore.
+  Future<List<Map<String, dynamic>>> obterPontosTuristicos() async {
+    final snapshot = await _pontosTuristicosRef.orderBy('nome').get();
+    return snapshot.docs
+        .map((doc) => {...doc.data(), 'id': doc.id})
+        .toList();
+  }
+
+  /// Cadastra um novo ponto turístico.
+  Future<String> adicionarPontoTuristico(Map<String, dynamic> ponto) async {
+    final dados = {...ponto}..remove('id');
+    final doc = await _pontosTuristicosRef.add(dados);
+    return doc.id;
+  }
+
+  /// Atualiza um ponto turístico existente.
+  Future<void> atualizarPontoTuristico(Map<String, dynamic> ponto) async {
+    final id = ponto['id']?.toString();
+    if (id == null) {
+      throw Exception('ID do ponto turístico não informado');
+    }
+    final dados = {...ponto}..remove('id');
+    await _pontosTuristicosRef.doc(id).update(dados);
+  }
+
+  /// Remove um ponto turístico pelo ID.
+  Future<void> deletarPontoTuristico(String id) async {
+    await _pontosTuristicosRef.doc(id).delete();
+  }
+
+  Future<void> _persistirEventosCache(
+    List<Map<String, dynamic>> eventos,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_cacheEventosKey, jsonEncode(eventos));
+  }
+
+  Future<List<Map<String, dynamic>>?> _recuperarEventosCache() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_cacheEventosKey);
+    if (raw == null) return null;
+    try {
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded
+          .map((item) =>
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>))
+          .toList();
+    } catch (_) {
+      await prefs.remove(_cacheEventosKey);
+      return null;
+    }
+  }
+
+  bool get eventosCarregadosDoCache => _eventosCarregadosDoCache;
 }
